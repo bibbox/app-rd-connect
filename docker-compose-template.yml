@@ -1,0 +1,37 @@
+version: '2'
+services:
+  §§INSTANCE-molgenis:
+    image: bibbox/molgenis
+    links:
+      - §§INSTANCE-molgenisdb:molgenisdb
+    ports:
+      - "§§PORT:8080"
+    environment:
+     - MOLGENIS_ADMIN_PASSWORD=§§MOLGENIS_ADMIN_PASSWORD
+     - MOLGENIS_ADMIN_email=§§MOLGENIS_ADMIN_EMAIL
+     - MYSQL_DATABASE=molgenis
+     - MYSQL_USER=molgenis
+     - MYSQL_PASSWORD=§§MYSQL_PASSWORD
+    volumes_from: 
+      - §§INSTANCE-molgenis-data     
+    depends_on:
+     - §§INSTANCE-molgenisdb
+
+  §§INSTANCE-molgenisdb:
+    image: mysql
+    user: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=§§MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=molgenis
+      - MYSQL_USER=molgenis
+      - MYSQL_PASSWORD=§§MYSQL_PASSWORD
+    volumes_from: 
+      - §§INSTANCE-molgenis-data
+
+§§INSTANCE-molgenis-data:
+    image: busybox
+    container_name: §§INSTANCE-molgenis-data
+    volumes:
+      - §§FOLDER/var/lib/mysql:/var/lib/mysql
+      
+  

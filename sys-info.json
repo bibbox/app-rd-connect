@@ -1,0 +1,4 @@
+{
+  runningcontainers:["-molgenis", "-mogenis-db"],
+  supportcontainers:["--molgenis-data"]    
+}
