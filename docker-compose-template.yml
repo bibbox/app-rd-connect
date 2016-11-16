@@ -2,6 +2,7 @@ version: '2'
 services:
   §§INSTANCE-molgenis:
     image: bibbox/molgenis
+    container_name:  §§INSTANCE-molgenis
     links:
       - §§INSTANCE-molgenisdb:molgenisdb
     ports:
@@ -19,6 +20,7 @@ services:
 
   §§INSTANCE-molgenisdb:
     image: mysql
+    container_name: §§INSTANCE-molgenisdb
     user: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=§§MYSQL_ROOT_PASSWORD
@@ -30,6 +32,7 @@ services:
 
   §§INSTANCE-molgenis-data:
     image: busybox
+     container_name: §§INSTANCE-molgenis-data
     container_name: §§INSTANCE-molgenis-data
     volumes:
       - §§FOLDER/var/lib/mysql:/var/lib/mysql
