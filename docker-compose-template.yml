@@ -32,7 +32,6 @@ services:
 
   §§INSTANCE-molgenis-data:
     image: busybox
-     container_name: §§INSTANCE-molgenis-data
     container_name: §§INSTANCE-molgenis-data
     volumes:
       - §§FOLDER/var/lib/mysql:/var/lib/mysql
