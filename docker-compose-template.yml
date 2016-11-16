@@ -28,7 +28,7 @@ services:
     volumes_from: 
       - §§INSTANCE-molgenis-data
 
-§§INSTANCE-molgenis-data:
+  §§INSTANCE-molgenis-data:
     image: busybox
     container_name: §§INSTANCE-molgenis-data
     volumes:
