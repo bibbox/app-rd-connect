@@ -28,10 +28,10 @@
    },
    {
       "id":"MYSQL_PASSWORD",
-      "display_name":"mysql password for the user molgenis",
+      "display_name":"mysql password´",
       "type":"PASSWORD",
       "default_value":"",
-      "description":"Password for mysql use molgenis.",
+      "description":"Password for mysql the user molgenis",
       "min_length": "1",
       "max_length": "128"
    }
