@@ -3,6 +3,7 @@
 ### Start Molgenis
 
 Be patient this can take some up to 5 minutes (its a huge app). The last message in the log should be something like this
+
 `16-Nov-2016 13:49:32.173 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 238399 ms`
 
 ### Log in with the username admin and the password you specified in the installation 
