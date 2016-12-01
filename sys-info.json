@@ -1,4 +1,4 @@
 {
-  runningcontainers:["-molgenis", "-molgenisdb"],
-  supportcontainers:["--molgenis-data"]    
+  runningcontainers:["§§INSTANCE-molgenis", "§§INSTANCE-molgenisdb"],
+  supportcontainers:["§§INSTANCE-molgenis-data"]    
 }
