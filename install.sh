@@ -48,6 +48,7 @@ createFolders()
     if [[ ! -d "$folder" ]]; then
         echo "Creating Installation Folder"
         mkdir -p "$folder/var/lib/mysql"
+		chmod 777 "$folder/var/lib/mysql"
     fi
 }
 
