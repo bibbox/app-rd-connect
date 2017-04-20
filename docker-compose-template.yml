@@ -4,7 +4,7 @@ services:
     image: bibbox/molgenis
     container_name: §§INSTANCE-molgenis
     links:
-      - §§INSTANCE-molgenisdb:molgenis-db
+      - §§INSTANCE-molgenis-db:molgenis-db
     ports:
       - "§§PORT:8080"
     volumes_from: 
