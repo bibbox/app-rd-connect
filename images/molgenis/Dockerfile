@@ -15,7 +15,7 @@ RUN rm -r $CATALINA_HOME/webapps/ROOT \
 	&& echo 'CATALINA_OPTS="-Xmx2g -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -Dmolgenis.home=/opt/molgenis/"' > $CATALINA_HOME/bin/setenv.sh
 
 RUN mkdir -p /opt/molgenis \
-	&& if ! test -f /opt/molgenis/molgenis-server.properties; then echo -e "db_user=molgenis\ndb_password=molgenis\ndb_uri=jdbc\:postgresql\://rd-connect-db/molgenis?reWriteBatchedInserts\=true&autosave\=CONSERVATIVE\nadmin.password=admin" > /opt/molgenis/molgenis-server.properties; fi
+	&& if ! test -f /opt/molgenis/molgenis-server.properties; then echo -e "db_user=molgenis\ndb_password=molgenis\ndb_uri=jdbc\:postgresql\://molgenis-db/molgenis?reWriteBatchedInserts\=true&autosave\=CONSERVATIVE\nadmin.password=admin" > /opt/molgenis/molgenis-server.properties; fi
 
 VOLUME /opt/molgenis
 

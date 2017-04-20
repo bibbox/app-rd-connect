@@ -17,7 +17,7 @@ services:
     container_name: §§INSTANCE-molgenis-db
     environment:
       - POSTGRES_USER=molgenis
-      - POSTGRES_PASSWORD=molgenis4bibbox
+      - POSTGRES_PASSWORD=molgenis
       - POSTGRES_DB=molgenis
     volumes_from: 
       - §§INSTANCE-molgenis-data
