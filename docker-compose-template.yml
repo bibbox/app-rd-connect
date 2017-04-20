@@ -26,6 +26,6 @@ services:
     image: busybox
     container_name: §§INSTANCE-molgenis-data
     volumes:
-      - §§FOLDER/mounted/pgsql:/var/lib/postgresql/data
+      - ./mounted/pgsql:/var/lib/postgresql/data
       
   
