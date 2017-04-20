@@ -1,7 +1,7 @@
 version: '2'
 services:
   §§INSTANCE-molgenis:
-    image: bibbox/molgenis
+    image: bibbox/molgenis:3.0.1
     container_name: §§INSTANCE-molgenis
     links:
       - §§INSTANCE-molgenis-db:molgenis-db
