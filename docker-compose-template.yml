@@ -2,31 +2,23 @@ version: '2'
 services:
   §§INSTANCE-molgenis:
     image: bibbox/molgenis
-    container_name:  §§INSTANCE-molgenis
+    container_name: §§INSTANCE-molgenis
     links:
-      - §§INSTANCE-molgenisdb:molgenisdb
+      - §§INSTANCE-molgenisdb:molgenis-db
     ports:
       - "§§PORT:8080"
-    environment:
-     - MOLGENIS_ADMIN_PASSWORD=§§MOLGENIS_ADMIN_PASSWORD
-     - MOLGENIS_ADMIN_email=§§MOLGENIS_ADMIN_EMAIL
-     - MYSQL_DATABASE=molgenis
-     - MYSQL_USER=molgenis
-     - MYSQL_PASSWORD=§§MYSQL_PASSWORD
     volumes_from: 
-      - §§INSTANCE-molgenis-data     
+      - §§INSTANCE-molgenis-data
     depends_on:
-     - §§INSTANCE-molgenisdb
+     - §§INSTANCE-molgenis-db
 
   §§INSTANCE-molgenisdb:
-    image: mysql
-    container_name: §§INSTANCE-molgenisdb
-    user: mysql
+    image: postgres:9.6-alpine
+    container_name: §§INSTANCE-molgenis-db
     environment:
-      - MYSQL_ROOT_PASSWORD=§§MYSQL_ROOT_PASSWORD
-      - MYSQL_DATABASE=molgenis
-      - MYSQL_USER=molgenis
-      - MYSQL_PASSWORD=§§MYSQL_PASSWORD
+      - POSTGRES_USER=molgenis
+      - POSTGRES_PASSWORD=olgenis
+      - POSTGRES_DB=§§PGSQL_PASSWORD
     volumes_from: 
       - §§INSTANCE-molgenis-data
 
@@ -34,6 +26,6 @@ services:
     image: busybox
     container_name: §§INSTANCE-molgenis-data
     volumes:
-      - §§FOLDER/var/lib/mysql:/var/lib/mysql
+      - §§FOLDER/mounted/pgsql:/var/lib/postgresql/data
       
   
