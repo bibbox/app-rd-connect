@@ -98,7 +98,7 @@ services:
 
     §§INSTANCE-molgenis-adminer:
       image: adminer
-      container_name: bibbox-molgenis-adminer
+      container_name: §§INSTANCE-molgenis-adminer
       restart: unless-stopped
       links:
         - §§INSTANCE-molgenis-postgres:db
