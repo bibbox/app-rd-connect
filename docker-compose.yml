@@ -81,7 +81,7 @@ services:
         image: molgenis/opencpu:opencpu-release-2019-03-20_12-07-11
         container_name: §§INSTANCE-molgenis-opencpu
         ports:
-          - §§PORT:8004
+          - §§PORT4:8004
 
     §§INSTANCE-molgenis-minio:
       image: minio/minio:RELEASE.2019-03-20T22-38-47Z
@@ -89,7 +89,7 @@ services:
       volumes_from: 
         - §§INSTANCE-molgenis-data
       ports:
-        - §§PORT4:9000
+        - §§PORT5:9000
       environment:
         MINIO_ACCESS_KEY: molgenis
         MINIO_SECRET_KEY: molgenis
