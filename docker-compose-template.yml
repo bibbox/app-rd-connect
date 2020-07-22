@@ -9,7 +9,7 @@ services:
       ports:
         - "§§PORT1:8080"
       volumes:
-        - ./backend.conf:/etc/nginx/proxy.d/backend.conf
+        - ${PWD}/backend.conf:/etc/nginx/proxy.d/backend.conf
       volumes_from: 
         - §§INSTANCE-molgenis-data
       depends_on:
