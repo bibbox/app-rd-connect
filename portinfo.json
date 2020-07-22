@@ -2,31 +2,37 @@
   "mappings": [
     {
       "id": "§§PORT1",
-      "url": "§§INSTANCE",
+      "url": "§§INSTANCE-frontend",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
     },
     {
       "id": "§§PORT2",
-      "url": "§§INSTANCE",
+      "url": "§§INSTANCE-elastic",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
     },
     {
       "id": "§§PORT3",
-      "url": "§§INSTANCE",
+      "url": "§§INSTANCE-elasticbin",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
     },
     {
       "id": "§§PORT4",
-      "url": "§§INSTANCE",
+      "url": "§§INSTANCE-opencpu",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
     },
     {
       "id": "§§PORT5",
-      "url": "§§INSTANCE",
+      "url": "§§INSTANCE-minio",
+      "protocol": "HTTP",
+      "proxy" : "PRIMARY"
+    },
+    {
+      "id": "§§PORT6",
+      "url": "§§INSTANCE-adminer",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
     }

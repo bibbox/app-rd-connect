@@ -1,28 +1,27 @@
 version: '2'
 
 services:
-    §§INSTANCE-molgenis-frontend:
+    bibbox-molgenis-frontend:
       image: molgenis/molgenis-frontend:8-stable
-      container_name: §§INSTANCE-molgenis-frontend
+      container_name: bibbox-molgenis-frontend
       links: 
-        - §§INSTANCE-molgenis:molgenis
+        - bibbox-molgenis:molgenis
       ports:
-        - "§§PORT1:8080"
+        - "80:80"
       volumes:
         - ./backend.conf:/etc/nginx/proxy.d/backend.conf
       volumes_from: 
-        - §§INSTANCE-molgenis-data
+        - bibbox-molgenis-data
       depends_on:
-        - "§§INSTANCE-molgenis"
+        - "bibbox-molgenis"
 
-    §§INSTANCE-molgenis:
+    bibbox-molgenis:
       image: molgenis/molgenis-app:8.4-stable
-      container_name: §§INSTANCE-molgenis
       links:
-        - §§INSTANCE-molgenis-postgres:postgres
-        - §§INSTANCE-molgenis-minio:minio
-        - §§INSTANCE-molgenis-elasticsearch:elasticsearch
-        - §§INSTANCE-molgenis-opencpu:opencpu
+        - bibbox-molgenis-postgres:postgres
+        - bibbox-molgenis-minio:minio
+        - bibbox-molgenis-elasticsearch:elasticsearch
+        - bibbox-molgenis-opencpu:opencpu
       environment:
         - environment=production
         - molgenis.home=/home/molgenis
@@ -40,11 +39,11 @@ services:
       expose:
         - "8080"
       volumes_from: 
-        - §§INSTANCE-molgenis-data
+        - bibbox-molgenis-data
       depends_on:
-        - §§INSTANCE-molgenis-postgres
+        - bibbox-molgenis-postgres
 
-    §§INSTANCE-molgenis-postgres:
+    bibbox-molgenis-postgres:
       image: postgres:11-alpine
       environment:
         - POSTGRES_USER=molgenis
@@ -53,12 +52,11 @@ services:
       expose:
         - "5432"
       volumes_from: 
-        - §§INSTANCE-molgenis-data
+        - bibbox-molgenis-data
       command: -c 'shared_buffers=256MB' -c 'max_locks_per_transaction=1024'
 
-    §§INSTANCE-molgenis-elasticsearch:
+    bibbox-molgenis-elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:5.5.3
-        container_name: §§INSTANCE-molgenis-elasticsearch
         environment:
           - cluster.name=molgenis
           - bootstrap.memory_lock=true
@@ -72,32 +70,43 @@ services:
             soft: -1
             hard: -1
         volumes_from: 
-          - §§INSTANCE-molgenis-data
+          - bibbox-molgenis-data
         ports:
-          - §§PORT2:9200
-          - §§PORT3:9300
+          - 9200:9200
+          - 9300:9300
 
-    §§INSTANCE-molgenis-opencpu:
+    bibbox-molgenis-opencpu:
         image: molgenis/opencpu:opencpu-release-2019-03-20_12-07-11
-        container_name: §§INSTANCE-molgenis-opencpu
         ports:
-          - §§PORT4:8004
+          - 8004:8004
 
-    §§INSTANCE-molgenis-minio:
+    bibbox-molgenis-minio:
       image: minio/minio:RELEASE.2019-03-20T22-38-47Z
-      container_name: §§INSTANCE-molgenis-minio
       volumes_from: 
-        - §§INSTANCE-molgenis-data
+        - bibbox-molgenis-data
       ports:
-        - §§PORT5:9000
+        - 9000:9000
       environment:
         MINIO_ACCESS_KEY: molgenis
         MINIO_SECRET_KEY: molgenis
       command: server /data
 
-    §§INSTANCE-molgenis-data:
+    bibbox-molgenis-adminer:
+      image: adminer
+      container_name: bibbox-molgenis-adminer
+      restart: unless-stopped
+      links:
+        - bibbox-molgenis-postgres:db
+      ports:
+        - 8085:8080
+      environment:
+        ADMINER_DEFAULT_SERVER=db
+        ADMINER_DEFAULT_USER=molgenis
+        ADMINER_DEFAULT_DATABASE=molgenis
+
+    bibbox-molgenis-data:
       image: busybox
-      container_name: §§INSTANCE-molgenis-data
+      container_name: bibbox-molgenis-data
       volumes:
         - ./data/var/lib/postgresql/data:/var/lib/postgresql/data
         - ./data/usr/share/elasticsearch/data:/usr/share/elasticsearch/data
