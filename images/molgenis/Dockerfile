@@ -3,7 +3,7 @@
 # VERSION 0.0.2 
 #
 
-FROM tomcat:7.0-jre8-alpine
+FROM tomcat:8.0-jre8
 
 RUN apk --no-cache add openssl \
 	&& wget -O molgenis-app-8.4.2.war http://search.maven.org/remotecontent?filepath=org/molgenis/molgenis-app/8.4.2/molgenis-app-8.4.2.war
