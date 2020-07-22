@@ -23,6 +23,12 @@
       "url": "§§INSTANCE",
       "protocol": "HTTP",
       "proxy" : "PRIMARY"
+    },
+    {
+      "id": "§§PORT5",
+      "url": "§§INSTANCE",
+      "protocol": "HTTP",
+      "proxy" : "PRIMARY"
     }
   ]
 }
