@@ -100,9 +100,9 @@ services:
       ports:
         - 8085:8080
       environment:
-        ADMINER_DEFAULT_SERVER=db
-        ADMINER_DEFAULT_USER=molgenis
-        ADMINER_DEFAULT_DATABASE=molgenis
+        - ADMINER_DEFAULT_SERVER=db
+        - ADMINER_DEFAULT_USER=molgenis
+        - ADMINER_DEFAULT_DATABASE=molgenis
 
     bibbox-molgenis-data:
       image: busybox
