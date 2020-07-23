@@ -120,3 +120,5 @@ services:
         - ./data/minio/data:/data
       
 
+        
+

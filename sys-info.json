@@ -2,3 +2,5 @@
   runningcontainers:["§§INSTANCE-molgenis", "§§INSTANCE-molgenis-postgres", "§§INSTANCE-molgenis-frontend", "§§INSTANCE-molgenis-elasticsearch", "§§INSTANCE-molgenis-opencpu", "§§INSTANCE-molgenis-minio"],
   supportcontainers:["§§INSTANCE-molgenis-data"]    
 }
+
+

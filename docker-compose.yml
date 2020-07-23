@@ -1,5 +1,6 @@
 version: '2'
 
+
 services:
     bibbox-molgenis-frontend:
       image: molgenis/molgenis-frontend:8-stable
