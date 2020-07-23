@@ -9,7 +9,7 @@ services:
       ports:
         - "§§PORT1:8080"
       volumes:
-        - "./backend.conf:/etc/nginx/proxy.d/backend.conf:ro"
+        - ./backend.conf:/etc/nginx/proxy.d/backend.conf:ro
       volumes_from: 
         - §§INSTANCE-molgenis-data
       depends_on:
@@ -117,7 +117,7 @@ services:
         - ./data/var/lib/postgresql/data:/var/lib/postgresql/data
         - ./data/usr/share/elasticsearch/data:/usr/share/elasticsearch/data
         - ./data/home/molgenis:/home/molgenis
-        - "./data/backend.conf:/etc/nginx/proxy.d/backend.conf:ro"
+        - ./data/backend.conf:/etc/nginx/proxy.d/backend.conf:ro
         - ./data/minio/data:/data
       
 
