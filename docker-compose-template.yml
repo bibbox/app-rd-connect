@@ -7,7 +7,7 @@ services:
       links: 
         - §§INSTANCE-molgenis:molgenis
       ports:
-        - "§§PORT1:8080"
+        - "§§PORT1:80"
       volumes_from: 
         - §§INSTANCE-molgenis-data
       depends_on:
@@ -43,6 +43,7 @@ services:
         - §§INSTANCE-molgenis-postgres
 
     §§INSTANCE-molgenis-postgres:
+      container_name: §§INSTANCE-molgenis-postgres
       image: postgres:11-alpine
       environment:
         - POSTGRES_USER=molgenis
