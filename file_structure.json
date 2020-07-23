@@ -1,9 +1,8 @@
 {
   "makefolders":[
-    "data/var/lib/postgresql/data:/var/lib/postgresql/data",
-    "data/usr/share/elasticsearch/data:/usr/share/elasticsearch/data",
-    "data/home/molgenis:/home/molgenis",
-    "data/backend.conf:/etc/nginx/proxy.d/backend.conf"
+    "data/var/lib/postgresql/data",
+    "data/usr/share/elasticsearch/data",
+    "data/home/molgenis"
   ],
   "copyfiles":[
     {
