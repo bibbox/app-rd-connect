@@ -18,6 +18,7 @@ services:
 
     bibbox-molgenis:
       image: molgenis/molgenis-app:8.4-stable
+      container_name: bibbox-molgenis
       links:
         - bibbox-molgenis-postgres:postgres
         - bibbox-molgenis-minio:minio
@@ -39,6 +40,8 @@ services:
         - "CATALINA_OPTS=-Xmx1g -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
       expose:
         - "8080"
+      volumes:
+        - ./backend.conf:/etc/nginx/proxy.d/backend.conf
       volumes_from: 
         - bibbox-molgenis-data
       depends_on:
@@ -46,6 +49,7 @@ services:
 
     bibbox-molgenis-postgres:
       image: postgres:11-alpine
+      container_name: bibbox-molgenis-postgres
       environment:
         - POSTGRES_USER=molgenis
         - POSTGRES_PASSWORD=molgenis
@@ -58,6 +62,7 @@ services:
 
     bibbox-molgenis-elasticsearch:
         image: docker.elastic.co/elasticsearch/elasticsearch:5.5.3
+        container_name: bibbox-molgenis-elasticsearch
         environment:
           - cluster.name=molgenis
           - bootstrap.memory_lock=true
@@ -78,11 +83,13 @@ services:
 
     bibbox-molgenis-opencpu:
         image: molgenis/opencpu:opencpu-release-2019-03-20_12-07-11
+        container_name: bibbox-molgenis-opencpu
         ports:
           - 8004:8004
 
     bibbox-molgenis-minio:
       image: minio/minio:RELEASE.2019-03-20T22-38-47Z
+      container_name: bibbox-molgenis-minio
       volumes_from: 
         - bibbox-molgenis-data
       ports:
