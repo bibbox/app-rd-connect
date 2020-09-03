@@ -1,7 +1,7 @@
 version: "2.0"
 services:
     §§INSTANCE-molgenis:
-      image: registry.molgenis.org/molgenis/molgenis-app:8.1.8
+      image: registry.molgenis.org/molgenis/molgenis-app:8.4.2
       container_name: §§INSTANCE-molgenis
       environment:
         - molgenis.home=/home/molgenis
@@ -27,6 +27,19 @@ services:
         - §§INSTANCE-molgenis-data
       depends_on:
         - §§INSTANCE-molgenis-postgres
+
+
+    §§INSTANCE-molgenis-frontend:
+
+      image: molgenis/molgenis-frontend:8.4.5
+      ports:
+        - "§§PORT2:80"
+      volumes: 
+        - ./backend.conf:/etc/nginx/proxy.d/backend.conf
+      volumes_from: 
+        - §§INSTANCE-molgenis-data
+      depends_on:
+        - "§§INSTANCE-molgenis"
 
     §§INSTANCE-molgenis-postgres:
       image: postgres:11-alpine
@@ -57,14 +70,14 @@ services:
       volumes_from: 
           - §§INSTANCE-molgenis-data
       ports:
-        - §§PORT2:9200
-        - §§PORT3:9300
+        - §§PORT3:9200
+        - §§PORT4:9300
 
     §§INSTANCE-molgenis-opencpu:
         image: molgenis/opencpu:opencpu-release-2019-03-20_12-07-11
         container_name: §§INSTANCE-molgenis-opencpu
         ports:
-          - §§PORT4:8004
+          - §§PORT5:8004
 
     §§INSTANCE-molgenis-minio:
       image: minio/minio:RELEASE.2019-03-20T22-38-47Z
@@ -72,7 +85,7 @@ services:
       volumes_from: 
         - §§INSTANCE-molgenis-data
       ports:
-        - §§PORT5:9000
+        - §§PORT6:9000
       environment:
         MINIO_ACCESS_KEY: molgenis
         MINIO_SECRET_KEY: molgenis
@@ -85,7 +98,7 @@ services:
       links:
         - §§INSTANCE-molgenis-postgres:db
       ports:
-        - §§PORT6:8080
+        - §§PORT7:8080
       environment:
         - ADMINER_DEFAULT_SERVER=db
         - ADMINER_DEFAULT_USER=molgenis
