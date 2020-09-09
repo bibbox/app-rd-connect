@@ -41,6 +41,8 @@ services:
         - §§INSTANCE-molgenis-data
       depends_on:
         - "§§INSTANCE-molgenis"
+      links:
+        - §§INSTANCE-molgenis:bibbox-molgenis
 
     §§INSTANCE-molgenis-postgres:
       image: postgres:11-alpine
