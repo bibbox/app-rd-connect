@@ -17,7 +17,7 @@ services:
         - MINIO_SECRET_KEY=molgenis
         - "CATALINA_OPTS=-Xmx1g -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
       ports:
-        - "§§PORT1:8080"
+        - "§§PORT2:8080"
       links:
         - §§INSTANCE-molgenis-postgres:postgres
         - §§INSTANCE-molgenis-minio:minio
@@ -34,7 +34,7 @@ services:
       image: molgenis/molgenis-frontend:8.4.5
       container_name: §§INSTANCE-molgenis-frontend
       ports:
-        - "§§PORT2:80"
+        - "§§PORT1:80"
       volumes: 
         - ./data/backend.conf:/etc/nginx/proxy.d/backend.conf
       volumes_from: 
