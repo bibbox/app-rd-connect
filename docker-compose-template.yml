@@ -32,6 +32,7 @@ services:
     §§INSTANCE-molgenis-frontend:
 
       image: molgenis/molgenis-frontend:8.4.5
+      container_name: §§INSTANCE-molgenis-frontend
       ports:
         - "§§PORT2:80"
       volumes: 
