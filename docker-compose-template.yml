@@ -36,7 +36,7 @@ services:
       ports:
         - "§§PORT2:80"
       volumes: 
-        - ./backend.conf:/etc/nginx/proxy.d/backend.conf
+        - ./data/backend.conf:/etc/nginx/proxy.d/backend.conf
       volumes_from: 
         - §§INSTANCE-molgenis-data
       depends_on:
