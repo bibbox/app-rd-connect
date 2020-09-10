@@ -1,7 +1,7 @@
 {
-	"name": "Molgenis",
-	"short_name": "Molgenis",
-	"version": "8.1.8",
+	"name": "BBMRI-ERIC Directory",
+	"short_name": "BBMRI-ERIC Directory",
+	"version": "8.4.2",
 	"description": "For biologists MOLGENIS is a suite of web databases for genotype, phenotype, QTL and analysis pipelines. / For bioinformaticians MOLGENIS is software generator to rapidly build web databases that make your biologists happy.",
 	"short_description": "EXCEL in the Web",
 	"catalogue_url": "",
