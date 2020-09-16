@@ -27,6 +27,21 @@ services:
         - §§INSTANCE-molgenis-data
       depends_on:
         - §§INSTANCE-molgenis-postgres
+    
+    §§INSTANCE-molgenis-frontend:
+
+      image: molgenis/molgenis-frontend:8.4.5
+      container_name: §§INSTANCE-molgenis-frontend
+      ports:
+        - "§§PORT1:80"
+      volumes: 
+        - ./data/backend.conf:/etc/nginx/proxy.d/backend.conf
+      volumes_from: 
+        - §§INSTANCE-molgenis-data
+      depends_on:
+        - "§§INSTANCE-molgenis"
+      links:
+        - §§INSTANCE-molgenis:bibbox-molgenis
 
     §§INSTANCE-molgenis-postgres:
       image: postgres:11-alpine
