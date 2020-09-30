@@ -1,5 +1,6 @@
 import json
 import xlsxwriter
+import pandas as pd
 
 def prep_packages(workbook, package_name):
 
@@ -36,10 +37,10 @@ def prep_entities(workbook, package_name, entity_names):
     entities.write("C2", "Directory")
     entities.write("G2", "PostgreSQL")
 
-    # entities.write("A3", entity_names[1])
-    # entities.write("B3", package_name)
-    # entities.write("C3", "Directory")
-    # entities.write("G3", "PostgreSQL")
+    entities.write("A3", entity_names[1])
+    entities.write("B3", package_name)
+    entities.write("C3", "Directory")
+    entities.write("G3", "PostgreSQL")
 
     return entities
 
@@ -68,7 +69,7 @@ def prep_attributes(workbook):
 if __name__ == "__main__":
 
     package_name = "rd_connect_test"
-    entity_names = ["directories"]
+    entity_names = ["directories", "diseases"]
 
     entity_full_names = [package_name + "_" + e for e in entity_names]
 
@@ -81,7 +82,8 @@ if __name__ == "__main__":
 
     # test_dir holds data of biobanks/registries
     rd_connect_test_dir = workbook.add_worksheet(entity_full_names[0])
-    # rd_connect_test_des = workbook.add_worksheet(entity_full_names[1])
+    # test_dis holds diseases data
+    rd_connect_test_dis = workbook.add_worksheet(entity_full_names[1])
 
     with open("rdconnectfinder.json") as f:
         file = dict(json.load(f))
@@ -99,14 +101,17 @@ if __name__ == "__main__":
     for j_entry in file[list(file.keys())[0]]:
         for key in j_entry.keys():
             entry_type = type(j_entry[key])
+            print(key)
 
             content = j_entry[key]
             key = key.replace(" ", "_")
 
+            # INT or STRING else Skip
             if entry_type == type(1):
                 current_type = entry_types[1]
             else:
                 current_type = entry_types[0]
+
             if entry_type == type(dict()) or entry_type == type(list()):
                 continue
 
@@ -121,8 +126,6 @@ if __name__ == "__main__":
                     attributes.write(len(key_list), 7, "FALSE")
                     attributes.write(len(key_list), 9, "FALSE")
 
-                    # if not entry_type == type(1):
-                    #     attributes.write(len(key_list), 9, "AUTO")
                     if key == "OrganizationID":
                         attributes.write(len(key_list), 9, "TRUE")
 
