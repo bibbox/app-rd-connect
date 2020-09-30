@@ -65,6 +65,9 @@ def prep_attributes(workbook):
 
     return attributes
 
+def add_entity(entry_type, key):
+
+
 
 if __name__ == "__main__":
 
@@ -93,6 +96,7 @@ if __name__ == "__main__":
     row = 1
     col = 0
     key_list = []
+    all_keys = []
     entry_types = ["string", "int"]
     current_type = entry_types[0]
     entry_num = 1
@@ -101,7 +105,7 @@ if __name__ == "__main__":
     for j_entry in file[list(file.keys())[0]]:
         for key in j_entry.keys():
             entry_type = type(j_entry[key])
-            print(key)
+            all_keys.append(key)
 
             content = j_entry[key]
             key = key.replace(" ", "_")
@@ -113,6 +117,7 @@ if __name__ == "__main__":
                 current_type = entry_types[0]
 
             if entry_type == type(dict()) or entry_type == type(list()):
+                full_entity_name = add_entity(entry_type)
                 continue
 
             else:
@@ -120,7 +125,7 @@ if __name__ == "__main__":
                     key_list.append(key)
                     attributes.write(len(key_list), 0, key)
                     attributes.write(len(key_list), 1, key)
-                    attributes.write(len(key_list), 3, entity_full_names[0])
+                    attributes.write(len(key_list), 3, full_entity_name)
                     attributes.write(len(key_list), 4, current_type)
                     attributes.write(len(key_list), 6, "FALSE")
                     attributes.write(len(key_list), 7, "FALSE")
@@ -140,5 +145,6 @@ if __name__ == "__main__":
         entry_num += 1
 
     print("entries: ", entry_num)
+    print(set(all_keys))
     workbook.close()
  
