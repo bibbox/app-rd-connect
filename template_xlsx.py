@@ -33,11 +33,10 @@ def prep_entities(workbook, package_name, entity_names):
     entities.write("J1", "description-en")
 
     for k, ent in enumerate(entity_names):
-        print(k, ent)
         entities.write(k+1, 0 , ent)
         entities.write(k+1, 1 , package_name)
         entities.write(k+1, 2 , "Directory")
-        entities.write(k+1, 3 , "PostgreSQL")
+        entities.write(k+1, 6 , "PostgreSQL")
 
     return entities
 
@@ -67,28 +66,48 @@ def prep_attributes(workbook, package_name, data):
         attributes.write(k+1, 1 , attr)
         attributes.write(k+1, 2 , " ")
         attributes.write(k+1, 3 , ent)
+        attributes.write(k+1, 7, "false")
+
+        if attr == "OrganizationID" or attr[:2] == "ID":
+            attributes.write(k+1, 7, "true")
+            attributes.write(k+1, 9, "true")
 
 
     return attributes
 
-# workbook = xlsxwriter.Workbook("rd_connect_auto.xlsx")
+def add_attributes(sheet, data, entity):
 
-package_name = "rd"
-workbook = xlsxwriter.Workbook("rd_connect_auto_template.xlsx")
+    attributes = list(data["Sheet1"].iloc[1:]["attribute"][data["Sheet1"].iloc[1:]["entity"] == entity])
 
-data = pandas.read_excel("rd_connect_entity_info.xlsx", sheet_name=None)
-entities = list(set(data["Sheet1"].iloc[1:]["entity"].values))
-entities = sorted([ent for ent in entities if type(ent) == type("string")])
-attributes = list(set(data["Sheet1"].iloc[1:]["attribute"].values))
-
-packages_sheet = prep_package(workbook, package_name)
-entities_sheet = prep_entities(workbook, package_name, entities)
-attributes_sheet = prep_attributes(workbook, package_name, data)
+    for k, attr in enumerate(attributes):
+        sheet.write(0, k, attr)
 
 
-for ent in entities:
-    full_entity_name = package_name + "_" + ent
-    sheet = workbook.add_worksheet(full_entity_name)
+def create_template(package_name, workbook_name):
 
-workbook.close()
+    workbook = xlsxwriter.Workbook(workbook_name)
+
+    data = pandas.read_excel("rd_connect_entity_info.xlsx", sheet_name=None)
+    entities = list(set(data["Sheet1"].iloc[1:]["entity"].values))
+    entities = sorted([ent for ent in entities if type(ent) == type("string")])
+    attributes = list(set(data["Sheet1"].iloc[1:]["attribute"].values))
+
+    packages_sheet = prep_package(workbook, package_name)
+    entities_sheet = prep_entities(workbook, package_name, entities)
+    attributes_sheet = prep_attributes(workbook, package_name, data)
+
+    for entity in entities:
+        full_entity_name = package_name + "_" + entity
+        sheet = workbook.add_worksheet(full_entity_name)
+        add_attributes(sheet, data, entity)
+
+    return workbook, entities
+
+if __name__ == "__main__":
+    package_name = "rd"
+    workbook_name = "rd_connect_auto_template.xlsx"
+
+    workbook, entities = create_template(package_name, workbook_name)
+
+    workbook.close()
 
