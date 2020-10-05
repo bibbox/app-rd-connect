@@ -2,6 +2,8 @@ import json
 import xlsxwriter
 import pandas as pd
 import template_xlsx
+import string
+
 
 
 def add_basic_info(workbook, data, package_name, entity_name, key, content, entry_num):
@@ -19,48 +21,50 @@ if __name__ == "__main__":
     print(data)
 
 
-    workbook, entities = template_xlsx.create_template(package_name, workbook_name)
+    # workbook, entities = template_xlsx.create_template(package_name, workbook_name)
 
-    with open("rdconnectfinder.json") as f:
-        file = dict(json.load(f))
-
-
-    first = True
-    row = 1
-    col = 0
-    key_list = []
-    all_keys = []
-    entry_types = ["string", "int"]
-    current_type = entry_types[0]
-    entry_num = 1
-    all_data = file[list(file.keys())[0]]
-
-    for j_entry in all_data:
-        for key in j_entry.keys():
-            entry_type = type(j_entry[key])
-            # print(entry_type)
-            all_keys.append(key)
-
-            content = j_entry[key]
-            # INT or STRING else Skip
-            if isinstance(j_entry[key], int) or isinstance(j_entry[key], str):
-                add_basic_info(workbook, data, package_name, "basic_info", key, content, entry_num)
-
-            if entry_type == type(dict()) or entry_type == type(list()):
-                continue
+    # with open("rdconnectfinder.json") as f:
+    #     file = dict(json.load(f))
 
 
-        entry_num += 1
+    # first = True
+    # row = 1
+    # col = 0
+    # key_list = []
+    # all_keys = []
+    # entry_types = ["string", "int"]
+    # current_type = entry_types[0]
+    # entry_num = 1
+    # all_data = file[list(file.keys())[0]]
 
-    print("entries: ", entry_num)
-    print(set(all_keys))
-    workbook.close()
+    # for j_entry in all_data:
+    #     for key in j_entry.keys():
+    #         entry_type = type(j_entry[key])
+    #         # print(entry_type)
+    #         all_keys.append(key)
+
+    #         content = j_entry[key]
+    #         # INT or STRING else Skip
+    #         if isinstance(j_entry[key], int) or isinstance(j_entry[key], str):
+    #             add_basic_info(workbook, data, package_name, "basic_info", key, content, entry_num)
+
+    #         if entry_type == type(dict()) or entry_type == type(list()):
+    #             continue
 
 
-    #change signs
+    #     entry_num += 1
 
-    #print(entities)
-    
+    # print("entries: ", entry_num)
+    # print(set(all_keys))
+    # workbook.close()
+
+
+    #loook for special characters
+    import re
+
+    invalidChars = set(string.punctuation.replace("_", " "))
+
+
     file = workbook_name  #workbook_name[:-5] + '_template.xlsx'
     #print('filename: ',file)
     xls = pd.ExcelFile(file)
@@ -71,11 +75,31 @@ if __name__ == "__main__":
 
         #for entity in entities:
         for sheet_name in xls.sheet_names:
-            #print(entity)
-            #full_entity_name = package_name + "_" + entity
-            print(sheet_name)
+
             df1 = pd.read_excel(xls, sheet_name)
+
+            #print("Validdd" if re.match("^[a-zA-Z0-9_]*$", sheet_name) else "Invaliddd")
+
+            if not re.match("^[a-zA-Z0-9 _]*$", sheet_name):
+                for char in invalidChars:
+                    sheet_name = sheet_name.replace(char,'_')
+                print(sheet_name)
+
+            for sheet_key in df1.keys():
+                if not re.match("^[a-zA-Z0-9_]*$", sheet_key):
+                    print(sheet_key)
+
+
+
+
+            # if any(char in invalidChars for char in sheet_name):
+
+
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
+
+
+
+
 
 
 
