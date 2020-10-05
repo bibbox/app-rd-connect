@@ -88,6 +88,7 @@ def create_template(package_name, workbook_name):
     workbook = xlsxwriter.Workbook(workbook_name)
 
     data = pandas.read_excel("rd_connect_entity_info.xlsx", sheet_name=None)
+    
     entities = list(set(data["Sheet1"].iloc[1:]["entity"].values))
     entities = sorted([ent for ent in entities if type(ent) == type("string")])
     attributes = list(set(data["Sheet1"].iloc[1:]["attribute"].values))

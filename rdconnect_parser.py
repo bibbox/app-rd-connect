@@ -56,3 +56,17 @@ if __name__ == "__main__":
     print(set(all_keys))
     workbook.close()
  
+
+    #change signs
+
+    #print(entities)
+    
+    file = workbook_name  #workbook_name[:-5] + '_template.xlsx'
+    #print('filename: ',file)
+    xls = pd.ExcelFile(file)
+
+    for entity in entities:
+        print(entity)
+        full_entity_name = package_name + "_" + entity
+        df1 = pd.read_excel(xls, full_entity_name)
+        print(df1)
