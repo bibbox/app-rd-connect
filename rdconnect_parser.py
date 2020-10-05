@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("entries: ", entry_num)
     print(set(all_keys))
     workbook.close()
- 
+
 
     #change signs
 
