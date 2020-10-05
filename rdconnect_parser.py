@@ -65,8 +65,31 @@ if __name__ == "__main__":
     #print('filename: ',file)
     xls = pd.ExcelFile(file)
 
-    for entity in entities:
-        print(entity)
-        full_entity_name = package_name + "_" + entity
-        df1 = pd.read_excel(xls, full_entity_name)
-        print(df1)
+
+
+    with pd.ExcelWriter('emx_rdconnect_test.xlsx',engine='xlsxwriter') as writer:
+
+        #for entity in entities:
+        for sheet_name in xls.sheet_names:
+            #print(entity)
+            #full_entity_name = package_name + "_" + entity
+            print(sheet_name)
+            df1 = pd.read_excel(xls, sheet_name)
+            df1.to_excel(writer, sheet_name=sheet_name,index=False)
+
+
+
+
+        # with pd.ExcelWriter('emx_rdconnect_test.xlsx') as writer:
+        #     df1.to_excel(writer,full_entity_name)
+        # print(df1)
+
+   
+
+    # sheet_to_df_map = {}
+    # for sheet_name in xls.sheet_names:
+    #     sheet_to_df_map[sheet_name] = xls.parse(sheet_name)
+
+
+
+        
