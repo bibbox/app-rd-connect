@@ -8,8 +8,10 @@ import string
 
 def add_basic_info(df_dict, data, package_name, entity_name, key, content, entry_num):
 
-    print("add basic info of: ", key)
-    print(df_dict[package_name + "_" + entity_name])
+    # get correct dataframe
+    df = df_dict[package_name + "_" + entity_name]
+
+    df.at[len(df[key].dropna()), key] = content
 
 
 
@@ -70,7 +72,8 @@ if __name__ == "__main__":
 
     # print("entries: ", entry_num)
     # print(set(all_keys))
+    print(df_dict["rd_basic_info"])
     workbook.close()
 
 
-    # helper_functions.anjas_function(df_list, entities)
+    helper_functions.anjas_function(df_dict, entities)
