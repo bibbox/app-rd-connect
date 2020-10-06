@@ -1,6 +1,7 @@
 import json
 import xlsxwriter
-import pandas
+import pandas as pd
+import re
 
 def prep_package(workbook, package_name):
     packages = workbook.add_worksheet("packages")
@@ -87,7 +88,7 @@ def create_template(package_name, workbook_name):
 
     workbook = xlsxwriter.Workbook(workbook_name)
 
-    data = pandas.read_excel("rd_connect_entity_info.xlsx", sheet_name=None)
+    data = pd.read_excel("rd_connect_entity_info.xlsx", sheet_name=None)
     
     entities = list(set(data["Sheet1"].iloc[1:]["entity"].values))
     entities = sorted([ent for ent in entities if type(ent) == type("string")])
@@ -104,10 +105,49 @@ def create_template(package_name, workbook_name):
 
     return workbook, entities
 
-def anjas_function(dataframe, entities):
 
-    print("Data: ", dataframe)
-    print("Entities: ", entities)
+
+def make_clean_EMX(df_dict):
+    ''' removes special characters
+    for sheets and header only a-z,A-Z,0-9,-,_ allowed
+    for data  only a-z,A-Z,0-9,#,_ allowed
+    
+    input:
+    df_dict: dict of all sheets (entities + data)
+    
+    output:
+    create clean EMX file with name choosen for clean_EMX'''
+
+
+    #name the output file
+    clean_EMX = 'emx_rdconnect_test.xlsx'
+
+    #output file is created, than iterate through all sheets and set allowed chars, delete unallowed ones
+    with pd.ExcelWriter(clean_EMX,engine='xlsxwriter') as writer:
+        for sheet_name in df_dict.keys():
+
+            df1 = df_dict[sheet_name]
+
+            if sheet_name == 'entities':
+                df1['name']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['name']])
+            if sheet_name == 'attributes':    
+                df1['name']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['name']])
+                df1['entity']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['entity']])
+
+
+            if not re.match('[^A-Za-z0-9_-]+', sheet_name):
+                sheet_name_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_name)
+                
+
+            for sheet_key in df1.keys():
+                sheet_key_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_key)
+                df1[sheet_key_new] = df1.pop(sheet_key)
+
+            df1.to_excel(writer, sheet_name=sheet_name_new,index=False)
+
+
+
+
 
 if __name__ == "__main__":
     package_name = "rd"
