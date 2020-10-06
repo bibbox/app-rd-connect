@@ -1,7 +1,7 @@
 import json
 import xlsxwriter
 import pandas as pd
-import template_xlsx
+import helper_functions
 import string
 
 
@@ -13,7 +13,7 @@ def add_basic_info(workbook, data, package_name, entity_name, key, content, entr
 
 def parse_data(package_name, workbook_name):
 
-    workbook, entities = template.create_template(package_name, workbook_name)
+    workbook, entities = helper_functions.create_template(package_name, workbook_name)
     workbook.close()
 
     df_list = []
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     data = pd.read_excel("rd_connect_entity_info.xlsx")
     # print(data)
 
-    workbook, entities = template_xlsx.create_template(package_name, workbook_name)
+    workbook, entities = helper_functions.create_template(package_name, workbook_name)
 
     with open("rdconnectfinder.json") as f:
         file = dict(json.load(f))
@@ -84,59 +84,59 @@ if __name__ == "__main__":
     #print('filename: ',file)
 
         #for entity in entities:
-        for sheet_name in xls.sheet_names:
+    for k, sheet_name in enumerate(entities):
 
-            df1 = pd.read_excel(xls, sheet_name)
+        df1 = df_list[k]
 
-            #print("Validdd" if re.match("^[a-zA-Z0-9_]*$", sheet_name) else "Invaliddd")
+        #print("Validdd" if re.match("^[a-zA-Z0-9_]*$", sheet_name) else "Invaliddd")
 
-            if sheet_name == 'entities':
-                for count in range(len(df1['name'])):
-                    df1['name'][count] = re.sub('[^A-Za-z0-9_-]+', '', df1['name'][count])
+        if sheet_name == 'entities':
+            for count in range(len(df1['name'])):
+                df1['name'][count] = re.sub('[^A-Za-z0-9_-]+', '', df1['name'][count])
 
-            if sheet_name == 'attributes':
-                
-                for count in range(len(df1['entity'])):
-                    df1['entity'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['entity'][count])
-                for count in range(len(df1['name'])):
-                    # if not re.match('[^A-Za-z0-9_]+',df1['name'][count]):
-                    #     print('ooooooooooo',df1['name'][count])
-                    df1['name'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['name'][count])
-                    # print(df1['name'][count])
-
-
-            if not re.match('[^A-Za-z0-9_-]+', sheet_name):
-                sheet_name_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_name)
-                
-            # if not re.match("^[a-zA-Z0-9_]*$", sheet_name):
-            #             print(sheet_name)
-            #             print(sheet_name_new)
+        if sheet_name == 'attributes':
+            
+            for count in range(len(df1['entity'])):
+                df1['entity'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['entity'][count])
+            for count in range(len(df1['name'])):
+                # if not re.match('[^A-Za-z0-9_]+',df1['name'][count]):
+                #     print('ooooooooooo',df1['name'][count])
+                df1['name'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['name'][count])
+                # print(df1['name'][count])
 
 
-            for sheet_key in df1.keys():
-                sheet_key_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_key)
-                df1[sheet_key_new] = df1.pop(sheet_key)
-                # if not re.match("^[a-zA-Z0-9]*$", sheet_key):
-                #         print(sheet_key)
-                #         print(sheet_key_new)
+        if not re.match('[^A-Za-z0-9_-]+', sheet_name):
+            sheet_name_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_name)
+            
+        # if not re.match("^[a-zA-Z0-9_]*$", sheet_name):
+        #             print(sheet_name)
+        #             print(sheet_name_new)
 
 
-            # if not re.match("^[a-zA-Z0-9 _]*$", sheet_name):
-            #     for char in invalidChars:
-            #         sheet_name = sheet_name.replace(char,'_')
-            #     print(sheet_name)
-
-            # for sheet_key in df1.keys():
-            #     if not re.match("^[a-zA-Z0-9_]*$", sheet_key):
+        for sheet_key in df1.keys():
+            sheet_key_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_key)
+            df1[sheet_key_new] = df1.pop(sheet_key)
+            # if not re.match("^[a-zA-Z0-9]*$", sheet_key):
             #         print(sheet_key)
+            #         print(sheet_key_new)
+
+
+        # if not re.match("^[a-zA-Z0-9 _]*$", sheet_name):
+        #     for char in invalidChars:
+        #         sheet_name = sheet_name.replace(char,'_')
+        #     print(sheet_name)
+
+        # for sheet_key in df1.keys():
+        #     if not re.match("^[a-zA-Z0-9_]*$", sheet_key):
+        #         print(sheet_key)
 
 
 
 
-            # if any(char in invalidChars for char in sheet_name):
+        # if any(char in invalidChars for char in sheet_name):
 
-            #print(sheet_name_new)
-            df1.to_excel(writer, sheet_name=sheet_name_new,index=False)
+        #print(sheet_name_new)
+        df1.to_excel(writer, sheet_name=sheet_name_new,index=False)
 
 
 
