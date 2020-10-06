@@ -104,6 +104,11 @@ def create_template(package_name, workbook_name):
 
     return workbook, entities
 
+def anjas_function(dataframe, entities):
+
+    print("Data: ", dataframe)
+    print("Entities: ", entities)
+
 if __name__ == "__main__":
     package_name = "rd"
     workbook_name = "rd_connect_auto_template.xlsx"
