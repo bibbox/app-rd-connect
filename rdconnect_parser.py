@@ -33,43 +33,43 @@ if __name__ == "__main__":
     data = pd.read_excel("rd_connect_entity_info.xlsx")
     # print(data)
 
-    # workbook, entities = template_xlsx.create_template(package_name, workbook_name)
+    workbook, entities = template_xlsx.create_template(package_name, workbook_name)
 
-    # with open("rdconnectfinder.json") as f:
-    #     file = dict(json.load(f))
+    with open("rdconnectfinder.json") as f:
+        file = dict(json.load(f))
 
     df_list, entitities = parse_data(package_name, workbook_name)
 
-    # first = True
-    # row = 1
-    # col = 0
-    # key_list = []
-    # all_keys = []
-    # entry_types = ["string", "int"]
-    # current_type = entry_types[0]
-    # entry_num = 1
-    # all_data = file[list(file.keys())[0]]
+    first = True
+    row = 1
+    col = 0
+    key_list = []
+    all_keys = []
+    entry_types = ["string", "int"]
+    current_type = entry_types[0]
+    entry_num = 1
+    all_data = file[list(file.keys())[0]]
 
-    # for j_entry in all_data:
-    #     for key in j_entry.keys():
-    #         entry_type = type(j_entry[key])
-    #         # print(entry_type)
-    #         all_keys.append(key)
+    for j_entry in all_data:
+        for key in j_entry.keys():
+            entry_type = type(j_entry[key])
+            # print(entry_type)
+            all_keys.append(key)
 
-    #         content = j_entry[key]
-    #         # INT or STRING else Skip
-    #         if isinstance(j_entry[key], int) or isinstance(j_entry[key], str):
-    #             add_basic_info(workbook, data, package_name, "basic_info", key, content, entry_num)
+            content = j_entry[key]
+            # INT or STRING else Skip
+            if isinstance(j_entry[key], int) or isinstance(j_entry[key], str):
+                add_basic_info(workbook, data, package_name, "basic_info", key, content, entry_num)
 
-    #         if entry_type == type(dict()) or entry_type == type(list()):
-    #             continue
+            if entry_type == type(dict()) or entry_type == type(list()):
+                continue
 
 
-    #     entry_num += 1
+        entry_num += 1
 
-    # print("entries: ", entry_num)
-    # print(set(all_keys))
-    # workbook.close()
+    print("entries: ", entry_num)
+    print(set(all_keys))
+    workbook.close()
 
 
     #loook for special characters
@@ -91,26 +91,53 @@ if __name__ == "__main__":
 
             #print("Validdd" if re.match("^[a-zA-Z0-9_]*$", sheet_name) else "Invaliddd")
 
-            if not re.match("^[a-zA-Z0-9 _]*$", sheet_name):
-                for char in invalidChars:
-                    sheet_name = sheet_name.replace(char,'_')
-                print(sheet_name)
+            if sheet_name == 'entities':
+                for count in range(len(df1['name'])):
+                    df1['name'][count] = re.sub('[^A-Za-z0-9_-]+', '', df1['name'][count])
+
+            if sheet_name == 'attributes':
+                
+                for count in range(len(df1['entity'])):
+                    df1['entity'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['entity'][count])
+                for count in range(len(df1['name'])):
+                    # if not re.match('[^A-Za-z0-9_]+',df1['name'][count]):
+                    #     print('ooooooooooo',df1['name'][count])
+                    df1['name'][count] = re.sub('[^A-Za-z0-9_]+', '', df1['name'][count])
+                    # print(df1['name'][count])
+
+
+            if not re.match('[^A-Za-z0-9_-]+', sheet_name):
+                sheet_name_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_name)
+                
+            # if not re.match("^[a-zA-Z0-9_]*$", sheet_name):
+            #             print(sheet_name)
+            #             print(sheet_name_new)
+
 
             for sheet_key in df1.keys():
-                if not re.match("^[a-zA-Z0-9_]*$", sheet_key):
-                    print(sheet_key)
+                sheet_key_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_key)
+                df1[sheet_key_new] = df1.pop(sheet_key)
+                # if not re.match("^[a-zA-Z0-9]*$", sheet_key):
+                #         print(sheet_key)
+                #         print(sheet_key_new)
+
+
+            # if not re.match("^[a-zA-Z0-9 _]*$", sheet_name):
+            #     for char in invalidChars:
+            #         sheet_name = sheet_name.replace(char,'_')
+            #     print(sheet_name)
+
+            # for sheet_key in df1.keys():
+            #     if not re.match("^[a-zA-Z0-9_]*$", sheet_key):
+            #         print(sheet_key)
 
 
 
 
             # if any(char in invalidChars for char in sheet_name):
 
-
-    with pd.ExcelWriter('emx_rdconnect_test.xlsx') as writer:
-        for k, df1 in enumerate(df_list):
-            
-            sheet_name = package_name + "_" + entitities[k]
-            df1.to_excel(writer, sheet_name=sheet_name,index=False)
+            #print(sheet_name_new)
+            df1.to_excel(writer, sheet_name=sheet_name_new,index=False)
 
 
 
@@ -130,5 +157,9 @@ if __name__ == "__main__":
     #     sheet_to_df_map[sheet_name] = xls.parse(sheet_name)
 
 
+
+# ''.join(e for e in string if e.isalnum())
+
+# re.sub('[^A-Za-z0-9]+', '', mystring)
 
         
