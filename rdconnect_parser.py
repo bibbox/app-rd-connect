@@ -3,29 +3,42 @@ import xlsxwriter
 import pandas as pd
 import template_xlsx
 import string
+import helper_functions
 
 
 
 def add_basic_info(workbook, data, package_name, entity_name, key, content, entry_num):
 
     print("add basic info of: ", key)
-    sheet = workbook.get_worksheet_by_name(package_name + "_" + entity_name)
-    column = list(data.attribute[data.entity.values == entity_name]).index(key)
-    sheet.write(entry_num, column, content)
+
+
+def parse_data(package_name, workbook_name):
+
+    workbook, entities = helper_functions.create_template(package_name, workbook_name)
+    workbook.close()
+
+    df_list = []
+    xls = pd.ExcelFile(workbook_name)
+    for sheet_name in xls.sheet_names:
+        df_list.append(pd.read_excel(xls, sheet_name))
+    
+    [print(df) for df in df_list]
+
+    return df_list, entities
 
 if __name__ == "__main__":
 
     package_name = "rd"
     workbook_name = "rd_connect_auto.xlsx"
     data = pd.read_excel("rd_connect_entity_info.xlsx")
-    print(data)
-
+    # print(data)
 
     # workbook, entities = template_xlsx.create_template(package_name, workbook_name)
 
     # with open("rdconnectfinder.json") as f:
     #     file = dict(json.load(f))
 
+    df_list, entitities = parse_data(package_name, workbook_name)
 
     # first = True
     # row = 1
@@ -61,17 +74,15 @@ if __name__ == "__main__":
 
     #loook for special characters
     import re
+    # print("entries: ", entry_num)
+    # print(set(all_keys))
+    # workbook.close()
 
     invalidChars = set(string.punctuation.replace("_", " "))
 
 
     file = workbook_name  #workbook_name[:-5] + '_template.xlsx'
     #print('filename: ',file)
-    xls = pd.ExcelFile(file)
-
-
-
-    with pd.ExcelWriter('emx_rdconnect_test.xlsx',engine='xlsxwriter') as writer:
 
         #for entity in entities:
         for sheet_name in xls.sheet_names:
@@ -95,6 +106,10 @@ if __name__ == "__main__":
             # if any(char in invalidChars for char in sheet_name):
 
 
+    with pd.ExcelWriter('emx_rdconnect_test.xlsx') as writer:
+        for k, df1 in enumerate(df_list):
+            
+            sheet_name = package_name + "_" + entitities[k]
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
 
 
