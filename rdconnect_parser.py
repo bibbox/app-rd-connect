@@ -3,7 +3,6 @@ import xlsxwriter
 import pandas as pd
 import template_xlsx
 import string
-import helper_functions
 
 
 
@@ -14,7 +13,7 @@ def add_basic_info(workbook, data, package_name, entity_name, key, content, entr
 
 def parse_data(package_name, workbook_name):
 
-    workbook, entities = helper_functions.create_template(package_name, workbook_name)
+    workbook, entities = template.create_template(package_name, workbook_name)
     workbook.close()
 
     df_list = []
