@@ -36,15 +36,15 @@ def prep_entities(workbook, package_name, entity_names):
     for k, ent in enumerate(entity_names):
         entities.write(k+1, 0 , ent)
         entities.write(k+1, 1 , package_name)
-        entities.write(k+1, 2 , "Directory")
+        entities.write(k+1, 2 , ent)
         entities.write(k+1, 6 , "PostgreSQL")
 
     return entities
 
 def prep_attributes(workbook, package_name, data):
 
-    attrs = list(data["Sheet1"].iloc[1:]["attribute"].values)
-    ent_list = list(data["Sheet1"].iloc[1:]["entity"].values)
+    attrs = list(data["Sheet1"].iloc[0:]["attribute"].values)
+    ent_list = list(data["Sheet1"].iloc[0:]["entity"].values)
     attributes = workbook.add_worksheet("attributes")
 
     attributes.write("A1", "name")
@@ -69,7 +69,7 @@ def prep_attributes(workbook, package_name, data):
         attributes.write(k+1, 3 , ent)
         attributes.write(k+1, 7, "false")
 
-        if attr == "OrganizationID" or attr[:2] == "ID":
+        if ent_list[k] == "basic_info" and attr == "OrganizationID" or ent_list[k] != "basic_info" and attr[:2] == "ID":
             attributes.write(k+1, 7, "true")
             attributes.write(k+1, 9, "true")
 
@@ -78,7 +78,7 @@ def prep_attributes(workbook, package_name, data):
 
 def add_attributes(sheet, data, entity):
 
-    attributes = list(data["Sheet1"].iloc[1:]["attribute"][data["Sheet1"].iloc[1:]["entity"] == entity])
+    attributes = list(data["Sheet1"]["attribute"][data["Sheet1"]["entity"] == entity])
 
     for k, attr in enumerate(attributes):
         sheet.write(0, k, attr)
