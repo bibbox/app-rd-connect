@@ -3,6 +3,7 @@ import xlsxwriter
 import pandas as pd
 import helper_functions
 import string
+import re
 
 
 
@@ -37,7 +38,11 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
 
                 for entry in list_like:
                     for k in entry.keys():
-                        content = entry[k]
+                        if len(entry[k]) > 255:
+                            content = "none"
+                        else:
+                            content = re.sub('[^A-Za-z0-9_]+', '',entry[k])
+                        
                         df.at[len(df[k].dropna()), k] = content
                     df.at[len(df["OrganizationID"].dropna()), "OrganizationID"] = org_id
 
@@ -49,8 +54,17 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
             for k in list_like.keys():
                 if "contact" in key:
                     df.at[len(df["main"].dropna()), "main"] = main
-                content = list_like[k]
+
+                if len(list_like[k]) > 255:
+                    content = "none"
+                
+                else:
+                    content = re.sub('[^A-Za-z0-9_]+', '',list_like[k])
+
                 df.at[len(df[k].dropna()), k] = content
+
+
+        df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"].dropna())
 
     except KeyError as e:
         print("KEY ERROR: ", e)
@@ -80,38 +94,24 @@ if __name__ == "__main__":
 
     df_dict, entitities = parse_data(package_name, workbook_name)
 
-    first = True
-    row = 1
-    col = 0
-    key_list = []
-    all_keys = []
     entry_types = ["string", "int"]
-    current_type = entry_types[0]
-    entry_num = 1
     all_data = file[list(file.keys())[0]]
 
     for j_entry in all_data:
         for key in j_entry.keys():
             entry_type = type(j_entry[key])
-            all_keys.append(key)
             org_id = j_entry["OrganizationID"]
-            # print("Org: ", org_id)
 
             content = j_entry[key]
-            # INT or STRING else Skip
+            # INT or STRING for basic info
             if isinstance(j_entry[key], int) or isinstance(j_entry[key], str):
                 add_basic_info(df_dict, package_name, "basic_info", key, content)
 
+            # DICT or LIST for other types of entities
             if entry_type == type(dict()) or entry_type == type(list()):
                 add_multi_content(df_dict, package_name, j_entry[key], key, content, org_id)
                 continue
 
-
-        entry_num += 1
-
-    # print("entries: ", entry_num)
-    # print(set(all_keys))
-    # print(df_dict)
     workbook.close()
 
 
