@@ -131,7 +131,7 @@ def make_clean_EMX(df_dict):
             if sheet_name == 'entities':
                 df1['name']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['name']])
             if sheet_name == 'attributes':    
-                df1['name']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['name']])
+                df1['name']=  pd.Series([re.sub('[^A-Za-z0-9_]+', '',dd) for dd in df1['name']])
                 df1['entity']=  pd.Series([re.sub('[^A-Za-z0-9_-]+', '',dd) for dd in df1['entity']])
 
 
@@ -140,8 +140,11 @@ def make_clean_EMX(df_dict):
                 
 
             for sheet_key in df1.keys():
+
                 sheet_key_new = re.sub('[^A-Za-z0-9_-]+', '', sheet_key)
                 df1[sheet_key_new] = df1.pop(sheet_key)
+
+                
 
             df1.to_excel(writer, sheet_name=sheet_name_new,index=False)
 
