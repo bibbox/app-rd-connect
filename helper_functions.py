@@ -44,6 +44,10 @@ def prep_entities(workbook, package_name, entity_names):
 
 def prep_attributes(workbook, package_name, data):
 
+    # add datatype "text" for longer fields:
+    longer_fields = ["_fieldsDisplay", "name", "Description", "If_yes__specify", "If_not__please_specify_what_type_of_collections_can_be_publicly_available", 
+                    "Standardized_Operating_Procedures__SOPs__available_for_data_management"]
+
     attrs = list(data["Sheet1"].iloc[0:]["attribute"].values)
     ent_list = list(data["Sheet1"].iloc[0:]["entity"].values)
     attributes = workbook.add_worksheet("attributes")
@@ -75,6 +79,9 @@ def prep_attributes(workbook, package_name, data):
 
             attributes.write(k+1, 7, "true")
             attributes.write(k+1, 9, "true")
+
+        if attr in longer_fields:
+            attributes.write(k+1, 4, "text")
 
 
     return attributes
