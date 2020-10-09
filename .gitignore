@@ -1,4 +1,5 @@
 .idea
 *.pyc
+*.xlsx
 settings.json
 /data
