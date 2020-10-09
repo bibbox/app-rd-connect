@@ -3,8 +3,9 @@ import xlsxwriter
 import pandas as pd
 import re
 
-def prep_package(workbook, package_name):
+def prep_package(workbook, package_name, workbook_name):
     packages = workbook.add_worksheet("packages")
+    label = workbook_name.split(".")[0]
 
     packages.write("A1", "name")
     packages.write("A1", "name")
@@ -14,7 +15,7 @@ def prep_package(workbook, package_name):
 
     packages.write("A2", package_name)
     packages.write("B2", package_name)
-    packages.write("C2", "RD-Connect Auto Template")
+    packages.write("C2", label)
 
     return packages
 
@@ -70,6 +71,8 @@ def prep_attributes(workbook, package_name, data):
         attributes.write(k+1, 7, "false")
 
         if ent_list[k] == "basic_info" and attr == "OrganizationID" or ent_list[k] != "basic_info" and attr[:2] == "ID":
+            attributes.write(k+1, 4, "int")
+
             attributes.write(k+1, 7, "true")
             attributes.write(k+1, 9, "true")
 
@@ -94,7 +97,7 @@ def create_template(package_name, workbook_name):
     entities = sorted([ent for ent in entities if type(ent) == type("string")])
     attributes = list(set(data["Sheet1"].iloc[1:]["attribute"].values))
 
-    packages_sheet = prep_package(workbook, package_name)
+    packages_sheet = prep_package(workbook, package_name, workbook_name)
     entities_sheet = prep_entities(workbook, package_name, entities)
     attributes_sheet = prep_attributes(workbook, package_name, data)
 
@@ -107,20 +110,17 @@ def create_template(package_name, workbook_name):
 
 
 
-def make_clean_EMX(df_dict):
+def make_clean_EMX(df_dict, clean_EMX = 'emx_rdconnect_test.xlsx'):
     ''' removes special characters
     for sheets and header only a-z,A-Z,0-9,-,_ allowed
     for data  only a-z,A-Z,0-9,#,_ allowed
     
     input:
     df_dict: dict of all sheets (entities + data)
+    clean_EMX: name of output file ready for molgenis
     
     output:
     create clean EMX file with name choosen for clean_EMX'''
-
-
-    #name the output file
-    clean_EMX = 'emx_rdconnect_test.xlsx'
 
     #output file is created, than iterate through all sheets and set allowed chars, delete unallowed ones
     with pd.ExcelWriter(clean_EMX,engine='xlsxwriter') as writer:
