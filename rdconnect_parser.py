@@ -42,7 +42,7 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
                         if len(entry[k]) > 255:
                             content = "none"
                         else:
-                            content = re.sub('[^A-Za-z0-9_@.]+', '',entry[k])
+                            content = re.sub('[^A-Za-z0-9_@. ]+', '',entry[k])
                         
                         df.at[len(df[k].dropna()), k] = content
 
@@ -58,11 +58,7 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
                 # if "contact" in key:
                 #     df.at[len(df["main"].dropna()), "main"] = main
 
-                if len(list_like[k]) > 255:
-                    content = "none"
-                
-                else:
-                    content = re.sub('[^A-Za-z0-9_@.]+', '',list_like[k])
+                content = re.sub('[^A-Za-z0-9_@. ]+', '',list_like[k])
 
                 df.at[len(df[k].dropna()), k] = content
 
