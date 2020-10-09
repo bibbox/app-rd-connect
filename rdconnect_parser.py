@@ -32,6 +32,7 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
                 for url in list_like:
                     df.at[len(df["OrganizationID"].dropna()), "OrganizationID"] = org_id
                     df.at[len(df[key].dropna()), key] = url
+                    df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"])
 
             # check/add DISEASE(S)
             if len(list_like) > 0 and isinstance(list_like[0], dict):
@@ -41,10 +42,12 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
                         if len(entry[k]) > 255:
                             content = "none"
                         else:
-                            content = re.sub('[^A-Za-z0-9_]+', '',entry[k])
+                            content = re.sub('[^A-Za-z0-9_@.]+', '',entry[k])
                         
                         df.at[len(df[k].dropna()), k] = content
+
                     df.at[len(df["OrganizationID"].dropna()), "OrganizationID"] = org_id
+                    df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"])
 
 
 
@@ -52,19 +55,19 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
             df.at[len(df["OrganizationID"].dropna()), "OrganizationID"] = org_id
 
             for k in list_like.keys():
-                if "contact" in key:
-                    df.at[len(df["main"].dropna()), "main"] = main
+                # if "contact" in key:
+                #     df.at[len(df["main"].dropna()), "main"] = main
 
                 if len(list_like[k]) > 255:
                     content = "none"
                 
                 else:
-                    content = re.sub('[^A-Za-z0-9_]+', '',list_like[k])
+                    content = re.sub('[^A-Za-z0-9_@.]+', '',list_like[k])
 
                 df.at[len(df[k].dropna()), k] = content
 
 
-        df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"].dropna())
+            df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"])
 
     except KeyError as e:
         print("KEY ERROR: ", e)
@@ -86,7 +89,7 @@ def parse_data(package_name, workbook_name):
 if __name__ == "__main__":
 
     package_name = "rd"
-    workbook_name = "rd_connect_auto.xlsx"
+    workbook_name = "rd_connect.xlsx"
     workbook, entities = helper_functions.create_template(package_name, workbook_name)
 
     with open("rdconnectfinder.json") as f:
@@ -115,4 +118,4 @@ if __name__ == "__main__":
     workbook.close()
 
 
-    helper_functions.make_clean_EMX(df_dict)
+    helper_functions.make_clean_EMX(df_dict, workbook_name)
