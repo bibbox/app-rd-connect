@@ -8,6 +8,8 @@ def add_collections_info(eric_data, rd_data):
     bb_type = ["RD"]
     bb_data_cat = "MEDICAL RECORDS" # OR OTHER?
 
+    #fill eric_data['eu_bbmri_eric_collections']
+
 def get_country_code(eric_data, rd_data):
     bb_country = rd_data["rd_address"]["country"]
     codes = list(eric_data["eu_bbmri_eric_countries"]["name"].values)
