@@ -8,7 +8,18 @@ def add_collections_info(eric_data, rd_data):
     bb_type = ["RD"]
     bb_data_cat = "MEDICAL RECORDS" # OR OTHER?
 
+
     #fill eric_data['eu_bbmri_eric_collections']
+    #take oranis id info   eric_data['eu_bbmri_eric_biobanks'], look id up in   rd_data['rd_diseases']  = create id and have all infos together
+
+    #rd_data['rd_diseases']['OrganizationID'] == ['11193']
+
+    #eric_data['eu_bbmri_eric_collections']['id'] = biobankid + ':collection:' + name_disease
+    #bbmri-eric:ID:IT_1382433386427702:collection:
+
+
+
+
 
 def get_country_code(eric_data, rd_data):
     bb_country = rd_data["rd_address"]["country"]
