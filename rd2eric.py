@@ -22,6 +22,13 @@ def get_country_code(eric_data, rd_data):
 
     return code_frame
 
+def generate_id(eric_data, bb_id):
+
+    id_list = ["rd_connect:ID:{0}:{1}".format(eric_data["eu_bbmri_eric_biobanks"]["country"].iloc[i],k) for i, k in enumerate(bb_id)]
+    id_frame = pd.DataFrame(id_list)
+
+    print(id_frame)
+    return id_frame
 
 def add_biobank_info(eric_data, rd_data):
 
@@ -32,8 +39,8 @@ def add_biobank_info(eric_data, rd_data):
     bb_id = rd_data["rd_basic_info"]["OrganizationID"]
     bb_name = rd_data["rd_basic_info"]["name"]
 
-    eric_data["eu_bbmri_eric_biobanks"]["id"] = bb_id
     eric_data["eu_bbmri_eric_biobanks"]["country"] = get_country_code(eric_data, rd_data)
+    eric_data["eu_bbmri_eric_biobanks"]["id"] = generate_id(eric_data, bb_id) 
     eric_data["eu_bbmri_eric_biobanks"]["name"] = bb_name
 
 
