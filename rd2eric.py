@@ -8,14 +8,59 @@ def add_collections_info(eric_data, rd_data):
     bb_type = ["RD"]
     bb_data_cat = "MEDICAL RECORDS" # OR OTHER?
 
+    print(eric_data["eu_bbmri_eric_biobanks"])
+
+    biobank_ids = eric_data["eu_bbmri_eric_biobanks"]['id']
+    #orga_ids = biobank_id.str.split(pat=":")    #int(orga_id[-1])
+    ids = [] 
+
+    count = 0
+    for biobank_id in biobank_ids:
+        m = rd_data['rd_diseases']['OrganizationID'] == int(biobank_id.split(':')[-1])
+        rows = rd_data['rd_diseases'][m]
+        #a = pd.concat([a,list(biobank_id + ':collection:' +rows['name'])])
+        for enum,name in enumerate(rows['name'].values):
+            ids.append(str(biobank_id) + ':collection:' +str(name))
+            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' +str(name)
+            #split_id = str(str(biobank_id) + ':collection:' +str(r)).str.split(pat=":")
+            eric_data['eu_bbmri_eric_collections'].at[count,'country']  = biobank_id.split(':')[2]
+            eric_data['eu_bbmri_eric_collections'].at[count,'biobank']  = str(biobank_id)
+            eric_data['eu_bbmri_eric_collections'].at[count,'name']  = str(name)
+
+            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = rows.reset_index(drop=True).at[enum,'number']
+            
+            eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
+            eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
+
+
+            eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = count
+            count +=1
+
+
+    # for k, id_ in enumerate(ids):
+    #     eric_data['eu_bbmri_eric_collections'].at[k,'id']  = id_
+
+    # splits_ids = eric_data['eu_bbmri_eric_collections']['id'].str.split(pat=":")     
+
+    # for k, split_id in enumerate(splits_ids):
+    #     eric_data['eu_bbmri_eric_collections'].at[k,'country']  = split_id[2]
+    #     eric_data['eu_bbmri_eric_collections'].at[k,'biobank']  = split_id[0] +':'+split_id[1] +':'+split_id[2] +':'+split_id[3]
+    #     eric_data['eu_bbmri_eric_collections'].at[k,'name']  = split_id[5]
+
+
 
     #fill eric_data['eu_bbmri_eric_collections']
     #take oranis id info   eric_data['eu_bbmri_eric_biobanks'], look id up in   rd_data['rd_diseases']  = create id and have all infos together
 
-    #rd_data['rd_diseases']['OrganizationID'] == ['11193']
+    #rd_data['rd_diseases']['OrganizationID'] == '11193'
 
     #eric_data['eu_bbmri_eric_collections']['id'] = biobankid + ':collection:' + name_disease
     #bbmri-eric:ID:IT_1382433386427702:collection:
+
+     
+
+
+    print(eric_data["eu_bbmri_eric_collections"])
 
 
 
