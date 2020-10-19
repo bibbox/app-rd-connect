@@ -29,9 +29,11 @@ def add_collections_info(eric_data, rd_data):
 
             eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = rows.reset_index(drop=True).at[enum,'number']
             
-            eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'OTHER'
+            eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
+            eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
+
+
             eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = count
-            eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = count
             count +=1
 
 
