@@ -51,20 +51,26 @@ def add_multi_content(df_dict, package_name, entity_name, key, list_like, org_id
 
 
         # add address or contact
-        if isinstance(list_like, dict):
+        if list_like and  isinstance(list_like, dict):
             df.at[len(df["OrganizationID"].dropna()), "OrganizationID"] = org_id
 
+            df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"])
+
             for k in list_like.keys():
+
                 if "contact" in key:
                     df.at[len(df[k].dropna()), "main"] = main
 
+
+                    
                 content = re.sub('[^A-Za-z0-9_@. ]+', '',list_like[k])
 
 
                 df.at[len(df[k].dropna()), k] = content
 
 
-            df.at[len(df["ID"].dropna()), "ID"] = len(df["ID"])
+
+
 
     except KeyError as e:
         print("KEY ERROR: ", e)
