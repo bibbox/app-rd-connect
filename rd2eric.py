@@ -95,14 +95,18 @@ def add_biobank_info(eric_data, rd_data):
 
     bb_id = rd_data["rd_basic_info"]["OrganizationID"]
     bb_name = rd_data["rd_basic_info"]["name"]
+    juridical = rd_data["rd_address"]["nameofhostinstitution"]
 
     eric_data["eu_bbmri_eric_biobanks"]["country"] = get_country_code(eric_data, rd_data)
     eric_data["eu_bbmri_eric_biobanks"]["id"] = generate_id(eric_data, bb_id) 
     eric_data["eu_bbmri_eric_biobanks"]["name"] = bb_name
+    eric_data["eu_bbmri_eric_biobanks"]["juridical_person"] = juridical
 
+    eric_data["eu_bbmri_eric_biobanks"]["juridical_person"][pd.isnull(juridical)] = "unknown"
 
     eric_data["eu_bbmri_eric_biobanks"]["partner_charter_signed"] = pd.DataFrame(bb_partner_cs*len(eric_data["eu_bbmri_eric_biobanks"]))
     eric_data["eu_bbmri_eric_biobanks"]["contact_priority"] = pd.DataFrame(contact_priority*len(eric_data["eu_bbmri_eric_biobanks"]))
+
 
 def add_persons(eric_data, rd_data):
     eric_data["eu_bbmri_eric_persons"]["id"] = rd_data["rd_contacts"]["ID"]
