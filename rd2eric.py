@@ -2,6 +2,7 @@ import json
 import xlsxwriter
 import pandas as pd
 import re
+import numpy as np
 
 
 def add_collections_info(eric_data, rd_data):
@@ -27,13 +28,17 @@ def add_collections_info(eric_data, rd_data):
             eric_data['eu_bbmri_eric_collections'].at[count,'biobank']  = str(biobank_id)
             eric_data['eu_bbmri_eric_collections'].at[count,'name']  = str(name)
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = rows.reset_index(drop=True).at[enum,'number']
+            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
             
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
             eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
 
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = count
+            if "biobank" in rd_data["rd_basic_info"]:
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "BIOLOGICAL_SAMPLES,OTHER"
+            else:
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "MEDICAL_RECORDS,OTHER"
+
             count +=1
 
 
@@ -122,7 +127,7 @@ def add_persons(eric_data, rd_data):
 
 def write_excel(eric_data, eric_name):
     
-    with pd.ExcelWriter(eric_name.split(".xlsx")[0]+"_merged"+".xlsx",engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(eric_name.split(".xlsx")[0]+"_merged2"+".xlsx",engine='xlsxwriter') as writer:
         for sheet_name in eric_data.keys():
             df1 = eric_data[sheet_name]
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
