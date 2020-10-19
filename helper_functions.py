@@ -116,6 +116,18 @@ def create_template(package_name, workbook_name):
     return workbook, entities
 
 
+def remove_double_contacts(df_dict):
+
+    # get indices of non-duplicates
+    keep_indices = df_dict["rd_contacts"].iloc[:, [0,2,3,4,5]].drop_duplicates().index
+    
+    # get subset of non-duplicates and reset indices
+    df_contacts = df_dict["rd_contacts"].iloc[list(keep_indices)].reset_index(drop=True)
+    
+    # reset "ID" column
+    df_contacts["ID"] = list(df_contacts.index)
+
+    df_dict["rd_contacts"] = df_contacts
 
 def make_clean_EMX(df_dict, clean_EMX = 'emx_rdconnect_test.xlsx'):
     ''' removes special characters
@@ -130,6 +142,8 @@ def make_clean_EMX(df_dict, clean_EMX = 'emx_rdconnect_test.xlsx'):
     create clean EMX file with name choosen for clean_EMX'''
 
     #output file is created, than iterate through all sheets and set allowed chars, delete unallowed ones
+    remove_double_contacts(df_dict)
+
     with pd.ExcelWriter(clean_EMX,engine='xlsxwriter') as writer:
         for sheet_name in df_dict.keys():
 
