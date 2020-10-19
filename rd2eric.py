@@ -21,7 +21,7 @@ def add_collections_info(eric_data, rd_data):
         #a = pd.concat([a,list(biobank_id + ':collection:' +rows['name'])])
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
-            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' +str(name) + '_' +str(count)
+            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' + str(name) + " " + str(count)
             #split_id = str(str(biobank_id) + ':collection:' +str(r)).str.split(pat=":")
             eric_data['eu_bbmri_eric_collections'].at[count,'country']  = biobank_id.split(':')[2]
             eric_data['eu_bbmri_eric_collections'].at[count,'biobank']  = str(biobank_id)
