@@ -40,7 +40,6 @@ def generate_id(eric_data, bb_id):
     id_list = ["rd_connect:ID:{0}:{1}".format(eric_data["eu_bbmri_eric_biobanks"]["country"].iloc[i],k) for i, k in enumerate(bb_id)]
     id_frame = pd.DataFrame(id_list)
 
-    print(id_frame)
     return id_frame
 
 def add_biobank_info(eric_data, rd_data):
@@ -60,7 +59,16 @@ def add_biobank_info(eric_data, rd_data):
     eric_data["eu_bbmri_eric_biobanks"]["partner_charter_signed"] = pd.DataFrame(bb_partner_cs*len(eric_data["eu_bbmri_eric_biobanks"]))
     eric_data["eu_bbmri_eric_biobanks"]["contact_priority"] = pd.DataFrame(contact_priority*len(eric_data["eu_bbmri_eric_biobanks"]))
 
-    print(eric_data["eu_bbmri_eric_biobanks"])
+def add_persons(eric_data, rd_data):
+    eric_data["eu_bbmri_eric_persons"]["id"] = rd_data["rd_contacts"]["ID"]
+    eric_data["eu_bbmri_eric_persons"]["first_name"] = rd_data["rd_contacts"]["firstname"]
+    eric_data["eu_bbmri_eric_persons"]["last_name"] = rd_data["rd_contacts"]["lastname"]
+    eric_data["eu_bbmri_eric_persons"]["email"] = rd_data["rd_contacts"]["email"]
+    eric_data["eu_bbmri_eric_persons"]["phone"] = rd_data["rd_contacts"]["phone"]
+    
+    bb_id = rd_data["rd_contacts"]["OrganizationID"]
+    eric_data["eu_bbmri_eric_persons"]["biobanks"] = generate_id(eric_data, bb_id) 
+    eric_data["eu_bbmri_eric_persons"]["country"] = [org_id_long.split(":")[-2] for org_id_long in eric_data["eu_bbmri_eric_persons"]["biobanks"]]
 
 
 def write_excel(eric_data, eric_name):
@@ -80,5 +88,6 @@ if __name__ == "__main__":
 
     add_biobank_info(eric_data, rd_data)
     add_collections_info(eric_data, rd_data)
+    add_persons(eric_data, rd_data)
 
     write_excel(eric_data, eric_name)
