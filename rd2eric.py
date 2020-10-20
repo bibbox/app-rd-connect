@@ -22,22 +22,27 @@ def add_collections_info(eric_data, rd_data):
         #a = pd.concat([a,list(biobank_id + ':collection:' +rows['name'])])
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
-            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' + str(name) + " " + str(count)
+            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' + str(enum+1) + ":" + str(name)
             #split_id = str(str(biobank_id) + ':collection:' +str(r)).str.split(pat=":")
             eric_data['eu_bbmri_eric_collections'].at[count,'country']  = biobank_id.split(':')[2]
             eric_data['eu_bbmri_eric_collections'].at[count,'biobank']  = str(biobank_id)
             eric_data['eu_bbmri_eric_collections'].at[count,'name']  = str(name)
 
             eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
-            
+            eric_data['eu_bbmri_eric_collections'].at[count,'size'] = rows.reset_index(drop=True).at[enum,'number']
+
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
             eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
 
 
-            if "biobank" in rd_data["rd_basic_info"]:
+            rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
+            if "biobank" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "BIOLOGICAL_SAMPLES,OTHER"
-            else:
+
+            elif "registry" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "MEDICAL_RECORDS,OTHER"
+            else:
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "OTHER"
 
             count +=1
 
@@ -107,7 +112,7 @@ def add_biobank_info(eric_data, rd_data):
     eric_data["eu_bbmri_eric_biobanks"]["name"] = bb_name
     eric_data["eu_bbmri_eric_biobanks"]["juridical_person"] = juridical
 
-    eric_data["eu_bbmri_eric_biobanks"]["juridical_person"][pd.isnull(juridical)] = "unknown"
+    eric_data["eu_bbmri_eric_biobanks"]["juridical_person"][pd.isnull(juridical)] = "not specified"
 
     eric_data["eu_bbmri_eric_biobanks"]["partner_charter_signed"] = pd.DataFrame(bb_partner_cs*len(eric_data["eu_bbmri_eric_biobanks"]))
     eric_data["eu_bbmri_eric_biobanks"]["contact_priority"] = pd.DataFrame(contact_priority*len(eric_data["eu_bbmri_eric_biobanks"]))
