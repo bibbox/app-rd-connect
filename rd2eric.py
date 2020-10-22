@@ -3,7 +3,56 @@ import xlsxwriter
 import pandas as pd
 import re
 import numpy as np
+import geopy
 
+def check_disease_type(eric_data, rd_data, enum, name, rows, count):
+
+    found_av = 0
+    code_nan = 0
+    found = 0
+
+    icd_code = rows.reset_index(drop=True).at[enum,'icd10']
+    orpha_code = rows.reset_index(drop=True).at[enum,'orphacode']
+    code_frame = eric_data['eu_bbmri_eric_disease_types']['code'].values
+
+    if pd.isnull(icd_code) and pd.isnull(orpha_code):
+        # print("no code available:", orpha_code)
+        code_nan += 1
+        return found_av, code_nan, found
+
+    if not pd.isnull(orpha_code):
+        orpha_codes = ["ORPHA:" + orph for orph in re.findall(r'\d+', orpha_code)]
+
+        code_list = []
+        for code in orpha_codes:
+            if code in code_frame:
+                print("orpha code found and available:", code)
+                code_list.append(str(code))  
+                found_av += 1
+
+        eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
+
+    if not pd.isnull(icd_code):
+        icd_no_space = icd_code.replace(" ", "")
+        letter_positions = [m.span() for m in re.finditer(r'[^A-Za-z]+', icd_no_space)]
+        icd_codes = [icd_no_space[k[0]-1] + icd_no_space[k[0]:k[1]] for k in letter_positions]
+
+        code_list = []
+        for code in icd_codes:
+            if code in code_frame:
+                print("icd code found and available:", icd_code)
+                found_av += 1
+                code_list.append("urn:miriam:icd:"+str(code))
+
+        eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
+
+
+    else:
+        # print("icd found. needs to be added: ", icd_code)
+        # print("orpha found. needs to be added: ", orpha_code)
+        found += 1
+
+    return found_av, code_nan, found
 
 def add_collections_info(eric_data, rd_data):
     bb_type = ["RD"]
@@ -16,8 +65,12 @@ def add_collections_info(eric_data, rd_data):
     ids = [] 
 
     count = 0
+    code_found = 0
+    code_nan = 0
+    code_found_av = 0
     for biobank_id in biobank_ids:
         m = rd_data['rd_diseases']['OrganizationID'] == int(biobank_id.split(':')[-1])
+        basic_info_mask = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
         rows = rd_data['rd_diseases'][m]
         #a = pd.concat([a,list(biobank_id + ':collection:' +rows['name'])])
         for enum,name in enumerate(rows['name'].values):
@@ -29,11 +82,20 @@ def add_collections_info(eric_data, rd_data):
             eric_data['eu_bbmri_eric_collections'].at[count,'name']  = str(name)
 
             eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
+            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude_donors'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
+
             eric_data['eu_bbmri_eric_collections'].at[count,'size'] = rows.reset_index(drop=True).at[enum,'number']
+            eric_data['eu_bbmri_eric_collections'].at[count,'number_of_donors'] = rows.reset_index(drop=True).at[enum,'number']
 
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
             eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
+            eric_data['eu_bbmri_eric_collections'].at[count,'description'] = rows.reset_index(drop=True).at[enum,'synonym']
+            eric_data['eu_bbmri_eric_collections'].at[count,'timestamp'] = rd_data['rd_basic_info']['lastactivities'][basic_info_mask].values[0]
 
+            found_av, nan, found = check_disease_type(eric_data, rd_data, enum, name, rows, count)
+            code_found_av += found_av
+            code_nan += nan
+            code_found += found
 
             rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
             if "biobank" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
@@ -46,6 +108,11 @@ def add_collections_info(eric_data, rd_data):
 
             count +=1
 
+    print("Total diseases: ", count)
+    print("Found in disease types: ", code_found)
+    print("Found/Av: ", 100*code_found_av/count)
+    print("Found: ", 100*code_found/count)
+    print("NaN: ", 100* code_nan/count)
 
     # for k, id_ in enumerate(ids):
     #     eric_data['eu_bbmri_eric_collections'].at[k,'id']  = id_
@@ -101,7 +168,7 @@ def add_biobank_info(eric_data, rd_data):
 
     # add MANDATORY information:
     bb_partner_cs = [False] # number of patients?
-    contact_priority = [1] # positive integer
+    contact_priority = [5] # positive integer
 
     bb_id = rd_data["rd_basic_info"]["OrganizationID"]
     bb_name = rd_data["rd_basic_info"]["name"]
@@ -116,6 +183,22 @@ def add_biobank_info(eric_data, rd_data):
 
     eric_data["eu_bbmri_eric_biobanks"]["partner_charter_signed"] = pd.DataFrame(bb_partner_cs*len(eric_data["eu_bbmri_eric_biobanks"]))
     eric_data["eu_bbmri_eric_biobanks"]["contact_priority"] = pd.DataFrame(contact_priority*len(eric_data["eu_bbmri_eric_biobanks"]))
+
+
+def add_geo_info(eric_data, rd_data):
+
+    geolocator = geopy.geocoders.Nominatim(user_agent="get_loc_script")
+    for biobank in eric_data["eu_bbmri_eric_biobanks"]["id"]:
+        street = rd_data["rd_address"]["street1"][rd_data["rd_address"]["OrganizationID"] == int(biobank.split(":")[-1])].values
+
+        if len(street) > 0:
+            location = geolocator.geocode(street[0])
+
+            if location:
+                longitude = location.longitude
+                latitude = location.latitude
+                eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
+                eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
 def additional_biobank_info(eric_data, rd_data):
 
@@ -140,7 +223,7 @@ def additional_biobank_info(eric_data, rd_data):
         eric_data["eu_bbmri_eric_biobanks"]["acronym"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = acronym
 
 
-    # eric_data["eu_bbmri_eric_biobanks"]["acronym"] = rd_data["rd_basic_info"]["name"]
+    # add_geo_info(eric_data, rd_data)
 
 def generate_contact_id(eric_data):
 
