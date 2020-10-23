@@ -26,10 +26,11 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         code_list = []
         for code in orpha_codes:
             if code in code_frame:
-                print("orpha code found and available:", code)
                 code_list.append(str(code))  
                 found_av += 1
 
+        # make sure that codes occur only once
+        code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
 
     if not pd.isnull(icd_code):
@@ -40,10 +41,11 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         code_list = []
         for code in icd_codes:
             if code in code_frame:
-                print("icd code found and available:", icd_code)
                 found_av += 1
                 code_list.append("urn:miriam:icd:"+str(code))
 
+        # make sure that codes occur only once
+        code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
 
 
