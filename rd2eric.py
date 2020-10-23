@@ -90,7 +90,7 @@ def add_collections_info(eric_data, rd_data):
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
             eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
             eric_data['eu_bbmri_eric_collections'].at[count,'description'] = rows.reset_index(drop=True).at[enum,'synonym']
-            eric_data['eu_bbmri_eric_collections'].at[count,'timestamp'] = rd_data['rd_basic_info']['lastactivities'][basic_info_mask].values[0]
+            eric_data['eu_bbmri_eric_collections'].at[count,'timestamp'] = pd.to_datetime(rd_data['rd_basic_info']['lastactivities'][basic_info_mask].values[0])
 
             found_av, nan, found = check_disease_type(eric_data, rd_data, enum, name, rows, count)
             code_found_av += found_av
