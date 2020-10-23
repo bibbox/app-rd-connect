@@ -5,6 +5,24 @@ import re
 import numpy as np
 import geopy
 
+
+def add_code_to_types(eric_data, code, code_id, name):
+
+    index = eric_data['eu_bbmri_eric_disease_types'].index.max()+1
+    ontology = "orphanet"
+    url = "http://identifiers.org/icd/{0}".format(code_id)
+    if not "ORPHA" in code:
+        ontology = "ICD-10"
+        url = "https://identifiers.org/{0}".format(code_id)
+
+
+    eric_data['eu_bbmri_eric_disease_types'].at[index, "id"] = code_id
+    eric_data['eu_bbmri_eric_disease_types'].at[index, "code"] = code
+    eric_data['eu_bbmri_eric_disease_types'].at[index, "label"] = name
+    eric_data['eu_bbmri_eric_disease_types'].at[index, "ontology"] = ontology
+    eric_data['eu_bbmri_eric_disease_types'].at[index, "uri"] = url
+
+
 def check_disease_type(eric_data, rd_data, enum, name, rows, count):
 
     found_av = 0
@@ -16,18 +34,22 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
     code_frame = eric_data['eu_bbmri_eric_disease_types']['code'].values
 
     if pd.isnull(icd_code) and pd.isnull(orpha_code):
-        # print("no code available:", orpha_code)
         code_nan += 1
         return found_av, code_nan, found
 
     if not pd.isnull(orpha_code):
         orpha_codes = ["ORPHA:" + orph for orph in re.findall(r'\d+', orpha_code)]
-
+        # print("before list comp: \n", orpha_code)
+        # print("\n after: \n ", orpha_codes)
         code_list = []
         for code in orpha_codes:
             if code in code_frame:
-                code_list.append(str(code))  
-                found_av += 1
+                code_list.append(str(code))
+            else:
+                code_id = code
+                add_code_to_types(eric_data, code, code_id, name)
+
+        found_av += 1
 
         # make sure that codes occur only once
         code_list = sorted(list(set(code_list)))
@@ -39,20 +61,21 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         icd_codes = [icd_no_space[k[0]-1] + icd_no_space[k[0]:k[1]] for k in letter_positions]
 
         code_list = []
+        rex = re.compile("^[A-Z]{1}[0-9]{2}[.][0-9]{1}$")
         for code in icd_codes:
             if code in code_frame:
-                found_av += 1
                 code_list.append("urn:miriam:icd:"+str(code))
+
+            else:
+                if rex.match(code):
+                    code_id = "urn:miriam:icd:"+str(code)
+                    add_code_to_types(eric_data, code, code_id, name)
+
+        found_av += 1
 
         # make sure that codes occur only once
         code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
-
-
-    else:
-        # print("icd found. needs to be added: ", icd_code)
-        # print("orpha found. needs to be added: ", orpha_code)
-        found += 1
 
     return found_av, code_nan, found
 
@@ -135,12 +158,6 @@ def add_collections_info(eric_data, rd_data):
 
     #eric_data['eu_bbmri_eric_collections']['id'] = biobankid + ':collection:' + name_disease
     #bbmri-eric:ID:IT_1382433386427702:collection:
-
-     
-
-
-    print(eric_data["eu_bbmri_eric_collections"])
-
 
 
 
@@ -248,9 +265,9 @@ def add_persons(eric_data, rd_data):
     eric_data["eu_bbmri_eric_persons"]["id"] = generate_contact_id(eric_data)
 
 
-def write_excel(eric_data, eric_name):
+def write_excel(eric_data, eric_name, output_name):
     
-    with pd.ExcelWriter(eric_name.split(".xlsx")[0]+"_merged"+".xlsx",engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output_name,engine='xlsxwriter') as writer:
         for sheet_name in eric_data.keys():
             df1 = eric_data[sheet_name]
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
@@ -259,6 +276,7 @@ def write_excel(eric_data, eric_name):
 if __name__ == "__main__":
     eric_name = "rd2eric.xlsx"
     rd_name = "rd_connect.xlsx"
+    output_name = "rd_connect_eric_format.xlsx"
 
     rd_data = pd.read_excel(rd_name, sheet_name=None)
     eric_data = pd.read_excel(eric_name, sheet_name=None)
@@ -269,4 +287,4 @@ if __name__ == "__main__":
 
     additional_biobank_info(eric_data, rd_data)
 
-    write_excel(eric_data, eric_name)
+    write_excel(eric_data, eric_name, output_name)
