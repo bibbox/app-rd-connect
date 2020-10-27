@@ -79,7 +79,7 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
 
     return found_av, code_nan, found
 
-def add_collections_info(eric_data, rd_data):
+def add_collections_info(eric_data, rd_data, sub_collections=False):
     bb_type = ["RD"]
     bb_data_cat = "MEDICAL RECORDS" # OR OTHER?
 
@@ -87,7 +87,8 @@ def add_collections_info(eric_data, rd_data):
 
     biobank_ids = eric_data["eu_bbmri_eric_biobanks"]['id']
     #orga_ids = biobank_id.str.split(pat=":")    #int(orga_id[-1])
-    ids = [] 
+    ids = []
+    collection_class = ""
 
     count = 0
     code_found = 0
@@ -98,19 +99,31 @@ def add_collections_info(eric_data, rd_data):
         basic_info_mask = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
         rows = rd_data['rd_diseases'][m]
         #a = pd.concat([a,list(biobank_id + ':collection:' +rows['name'])])
+        if sub_collections:
+            collection_class = "_pa"
+            parent_id = str(biobank_id) + ':collection{0}'.format(collection_class)
+            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = parent_id
+            collection_class = "_ch"
+            count += 1
+
+        total_size = 0
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
-            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection:' + str(enum+1) + ":" + str(name)
+            eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection{0}:'.format(collection_class) + str(enum+1) + ":" + str(name)
             #split_id = str(str(biobank_id) + ':collection:' +str(r)).str.split(pat=":")
             eric_data['eu_bbmri_eric_collections'].at[count,'country']  = biobank_id.split(':')[2]
             eric_data['eu_bbmri_eric_collections'].at[count,'biobank']  = str(biobank_id)
             eric_data['eu_bbmri_eric_collections'].at[count,'name']  = str(name)
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
-            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude_donors'] = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
+            mag = int(np.log10(np.max([1, rows.reset_index(drop=True).at[enum,'number']])))
+            size = rows.reset_index(drop=True).at[enum,'number']
+            total_size += size
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'size'] = rows.reset_index(drop=True).at[enum,'number']
-            eric_data['eu_bbmri_eric_collections'].at[count,'number_of_donors'] = rows.reset_index(drop=True).at[enum,'number']
+            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = mag
+            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude_donors'] = mag
+
+            eric_data['eu_bbmri_eric_collections'].at[count,'size'] = size
+            eric_data['eu_bbmri_eric_collections'].at[count,'number_of_donors'] = size
 
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
             eric_data['eu_bbmri_eric_collections'].at[count,'contact_priority'] = 5
@@ -124,20 +137,36 @@ def add_collections_info(eric_data, rd_data):
 
             rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
             if "biobank" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
-                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "BIOLOGICAL_SAMPLES,OTHER"
+                data_cat = "BIOLOGICAL_SAMPLES,OTHER"
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
 
             elif "registry" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
-                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "MEDICAL_RECORDS,OTHER"
+                data_cat = "MEDICAL_RECORDS,OTHER"
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
             else:
-                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = "OTHER"
+                data_cat = "OTHER"
+                eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
+
+            if sub_collections:
+                eric_data['eu_bbmri_eric_collections'].at[count,'parent_collection'] = parent_id
 
             count +=1
 
-    print("Total diseases: ", count)
-    print("Found in disease types: ", code_found)
-    print("Found/Av: ", 100*code_found_av/count)
-    print("Found: ", 100*code_found/count)
-    print("NaN: ", 100* code_nan/count)
+        if sub_collections:
+            
+            print("Parent: ", parent_id)
+            parent_mask = eric_data['eu_bbmri_eric_collections']["id"] == parent_id
+            bb_name = rd_data['rd_basic_info'][basic_info_mask]["name"].values[0]
+            total_mag = int(np.log10(np.max([1, size])))
+
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'country']  = biobank_id.split(':')[2]
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'biobank']  = str(biobank_id)
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'name']  = str(bb_name)
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'type'] = "RD"
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'contact_priority'] = 5
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'data_categories'] = data_cat
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'size'] = total_size
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude'] = total_mag
 
     # for k, id_ in enumerate(ids):
     #     eric_data['eu_bbmri_eric_collections'].at[k,'id']  = id_
@@ -204,20 +233,40 @@ def add_biobank_info(eric_data, rd_data):
     eric_data["eu_bbmri_eric_biobanks"]["contact_priority"] = pd.DataFrame(contact_priority*len(eric_data["eu_bbmri_eric_biobanks"]))
 
 
-def add_geo_info(eric_data, rd_data):
+def add_geo_info(eric_data, rd_data, geo_file="biobank_location_info.xlsx", try_geolocator=False):
 
-    geolocator = geopy.geocoders.Nominatim(user_agent="get_loc_script")
-    for biobank in eric_data["eu_bbmri_eric_biobanks"]["id"]:
-        street = rd_data["rd_address"]["street1"][rd_data["rd_address"]["OrganizationID"] == int(biobank.split(":")[-1])].values
+    try:
+        geo_info = pd.read_excel(geo_file, sheet_name=None)
+        geo_df = geo_info["Sheet1"]
+        for biobank in eric_data["eu_bbmri_eric_biobanks"]["id"]:
+            longitude = geo_df[geo_df["id"] == biobank]["longitude"].values
+            latitude = geo_df[geo_df["id"] == biobank]["latitude"].values
 
-        if len(street) > 0:
-            location = geolocator.geocode(street[0])
+            eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
+            eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
-            if location:
-                longitude = location.longitude
-                latitude = location.latitude
-                eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
-                eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
+            return
+
+    except FileNotFoundError:
+
+        if not try_geolocator:
+            print("[Error] \n")
+            print("File [{0}] not found \n Use correct geo location file \n or set variable:  \"try_geolocator\" =True to use geolocation service".format(geo_file))
+            print("Skipping Location info")
+            return
+
+        geolocator = geopy.geocoders.Nominatim(user_agent="get_loc_script")
+        for biobank in eric_data["eu_bbmri_eric_biobanks"]["id"]:
+            street = rd_data["rd_address"]["street1"][rd_data["rd_address"]["OrganizationID"] == int(biobank.split(":")[-1])].values
+
+            if len(street) > 0:
+                location = geolocator.geocode(street[0])
+
+                if location:
+                    longitude = location.longitude
+                    latitude = location.latitude
+                    eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
+                    eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
 def additional_biobank_info(eric_data, rd_data):
 
@@ -242,7 +291,7 @@ def additional_biobank_info(eric_data, rd_data):
         eric_data["eu_bbmri_eric_biobanks"]["acronym"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = acronym
 
 
-    # add_geo_info(eric_data, rd_data)
+    add_geo_info(eric_data, rd_data)
 
 def generate_contact_id(eric_data):
 
@@ -272,19 +321,42 @@ def write_excel(eric_data, eric_name, output_name):
             df1 = eric_data[sheet_name]
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
 
+def rename_packages(eric_data, package_name):
+    old_keys = list(eric_data.keys())
+    new_keys = [key.replace("eu_bbmri_eric", package_name) for key in old_keys]
+    new_dict = dict(zip(new_keys, eric_data.values()))
+    new_dict["entities"] = new_dict["entities"].replace(["eu_bbmri_eric"], [package_name])
+    new_dict["packages"]["name"] = package_name
+    new_dict["packages"]["label"] = package_name
+    new_dict["packages"]["description"] = package_name
+
+    new_dict["attributes"]["entity"] = [val.replace("eu_bbmri_eric", package_name) for val in new_dict["attributes"]["entity"].values]
+    new_dict["entities"]["extends"] = [val.replace("eu_bbmri_eric", package_name) if not pd.isnull(val) else "" for val in new_dict["entities"]["extends"].values]
+    new_dict["attributes"]["refEntity"] = [val.replace("eu_bbmri_eric", package_name) if not pd.isnull(val) else "" for val in new_dict["attributes"]["refEntity"].values]
+
+    return new_dict
 
 if __name__ == "__main__":
+    sub_collections = False
+
     eric_name = "rd2eric.xlsx"
     rd_name = "rd_connect.xlsx"
     output_name = "rd_connect_eric_format_V1.xlsx"
+    package_name = "rd_connect_v1"
+
+    if sub_collections:
+        output_name = "rd_connect_eric_format_V2.xlsx"
+        package_name = "rd_connect_v2"
 
     rd_data = pd.read_excel(rd_name, sheet_name=None)
     eric_data = pd.read_excel(eric_name, sheet_name=None)
 
     add_biobank_info(eric_data, rd_data)
-    add_collections_info(eric_data, rd_data)
+    add_collections_info(eric_data, rd_data, sub_collections)
     add_persons(eric_data, rd_data)
 
     additional_biobank_info(eric_data, rd_data)
 
+    # change package name
+    # eric_data = rename_packages(eric_data, package_name)
     write_excel(eric_data, eric_name, output_name)
