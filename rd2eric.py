@@ -276,7 +276,7 @@ def write_excel(eric_data, eric_name, output_name):
 if __name__ == "__main__":
     eric_name = "rd2eric.xlsx"
     rd_name = "rd_connect.xlsx"
-    output_name = "rd_connect_eric_format.xlsx"
+    output_name = "rd_connect_eric_format_V1.xlsx"
 
     rd_data = pd.read_excel(rd_name, sheet_name=None)
     eric_data = pd.read_excel(eric_name, sheet_name=None)
