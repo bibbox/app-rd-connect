@@ -7,6 +7,20 @@ import geopy
 
 
 def add_code_to_types(eric_data, code, code_id, name):
+    """ adds icd10 or orpha code to "bbmri_eric_disease_type",
+        generates url from code, adds "ontology": orphanet or ICD-10
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    code : string
+        icd10 or orpha code eg.: ORPHA:166 or G60.0
+    code_id : string
+        unique code id for disease code eg.: "ORPHA:166" or "urn:miriam:icd:G60.0"
+    name : string
+        name of disease from rd_connect
+    """
 
     index = eric_data['eu_bbmri_eric_disease_types'].index.max()+1
     ontology = "orphanet"
@@ -24,18 +38,33 @@ def add_code_to_types(eric_data, code, code_id, name):
 
 
 def check_disease_type(eric_data, rd_data, enum, name, rows, count):
+    """ checks param "diagnosis_available" for icd10 or orpha - codes.
+        if codes can be extracted and not in bbmri_eric_disease_types:
+        calls function: add_code_to_types
 
-    found_av = 0
-    code_nan = 0
-    found = 0
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    enum : int
+        row number of current disease in rd_connect
+    name : string
+        name of disease from rd_connect
+    rows : data frame
+        data frame holding disease information of current biobank
+    count : int
+        counter of current (sub) collection. needed for access to "diagnosis_available"
+    """
+
 
     icd_code = rows.reset_index(drop=True).at[enum,'icd10']
     orpha_code = rows.reset_index(drop=True).at[enum,'orphacode']
     code_frame = eric_data['eu_bbmri_eric_disease_types']['code'].values
 
     if pd.isnull(icd_code) and pd.isnull(orpha_code):
-        code_nan += 1
-        return found_av, code_nan, found
+        return
 
     if not pd.isnull(orpha_code):
         orpha_codes = ["ORPHA:" + orph for orph in re.findall(r'\d+', orpha_code)]
@@ -48,8 +77,6 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
             else:
                 code_id = code
                 add_code_to_types(eric_data, code, code_id, name)
-
-        found_av += 1
 
         # make sure that codes occur only once
         code_list = sorted(list(set(code_list)))
@@ -71,17 +98,24 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
                     code_id = "urn:miriam:icd:"+str(code)
                     add_code_to_types(eric_data, code, code_id, name)
 
-        found_av += 1
-
         # make sure that codes occur only once
         code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
 
-    return found_av, code_nan, found
+def add_collections_info(eric_data, rd_data, sub_collections=True):
+    """ adds disease information into bbmri_collection entity
 
-def add_collections_info(eric_data, rd_data, sub_collections=False):
-    bb_type = ["RD"]
-    bb_data_cat = "MEDICAL RECORDS" # OR OTHER?
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    sub_collections : bool, optional
+        generates parent collection (biobank/registry info) and subcollections (diseases) if True, else only
+        collections are generated for diseases,
+        by default True
+    """
 
     print(eric_data["eu_bbmri_eric_biobanks"])
 
@@ -91,9 +125,6 @@ def add_collections_info(eric_data, rd_data, sub_collections=False):
     collection_class = ""
 
     count = 0
-    code_found = 0
-    code_nan = 0
-    code_found_av = 0
     for biobank_id in biobank_ids:
         m = rd_data['rd_diseases']['OrganizationID'] == int(biobank_id.split(':')[-1])
         basic_info_mask = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
@@ -130,10 +161,7 @@ def add_collections_info(eric_data, rd_data, sub_collections=False):
             eric_data['eu_bbmri_eric_collections'].at[count,'description'] = rows.reset_index(drop=True).at[enum,'synonym']
             eric_data['eu_bbmri_eric_collections'].at[count,'timestamp'] = pd.to_datetime(rd_data['rd_basic_info']['lastactivities'][basic_info_mask].values[0])
 
-            found_av, nan, found = check_disease_type(eric_data, rd_data, enum, name, rows, count)
-            code_found_av += found_av
-            code_nan += nan
-            code_found += found
+            check_disease_type(eric_data, rd_data, enum, name, rows, count)
 
             rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
             if "biobank" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
@@ -154,7 +182,6 @@ def add_collections_info(eric_data, rd_data, sub_collections=False):
 
         if sub_collections:
             
-            print("Parent: ", parent_id)
             parent_mask = eric_data['eu_bbmri_eric_collections']["id"] == parent_id
             bb_name = rd_data['rd_basic_info'][basic_info_mask]["name"].values[0]
             total_mag = int(np.log10(np.max([1, size])))
@@ -168,30 +195,23 @@ def add_collections_info(eric_data, rd_data, sub_collections=False):
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'size'] = total_size
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude'] = total_mag
 
-    # for k, id_ in enumerate(ids):
-    #     eric_data['eu_bbmri_eric_collections'].at[k,'id']  = id_
-
-    # splits_ids = eric_data['eu_bbmri_eric_collections']['id'].str.split(pat=":")     
-
-    # for k, split_id in enumerate(splits_ids):
-    #     eric_data['eu_bbmri_eric_collections'].at[k,'country']  = split_id[2]
-    #     eric_data['eu_bbmri_eric_collections'].at[k,'biobank']  = split_id[0] +':'+split_id[1] +':'+split_id[2] +':'+split_id[3]
-    #     eric_data['eu_bbmri_eric_collections'].at[k,'name']  = split_id[5]
-
-
-
-    #fill eric_data['eu_bbmri_eric_collections']
-    #take oranis id info   eric_data['eu_bbmri_eric_biobanks'], look id up in   rd_data['rd_diseases']  = create id and have all infos together
-
-    #rd_data['rd_diseases']['OrganizationID'] == '11193'
-
-    #eric_data['eu_bbmri_eric_collections']['id'] = biobankid + ':collection:' + name_disease
-    #bbmri-eric:ID:IT_1382433386427702:collection:
-
-
-
 
 def get_country_code(eric_data, rd_data):
+    """gets country code (ISO norm) eg.: AUSTRIA -> AUT ; UNITED STATS -> US etc
+        missing / unknown: "ZZ"
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+
+    Returns
+    -------
+    data frame
+        data frame countaining country codes of all countries. if no country specified: "ZZ"
+    """
     bb_country = rd_data["rd_address"]["country"]
     codes = list(eric_data["eu_bbmri_eric_countries"]["name"].values)
 
@@ -206,6 +226,22 @@ def get_country_code(eric_data, rd_data):
     return code_frame
 
 def generate_bb_id(eric_data, bb_id):
+    """generates new biobank id using the following format: "rd_connect:ID:[COUNTRY_CODE]:[RD_CONNECT_ID]"
+        eg.: "rd_connect:ID:US:11111"
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    bb_id : int
+        biobank id from rd_connect
+
+    Returns
+    -------
+    data frame
+        data frame that holds biobank id for bbmri_eric in format: "rd_connect:ID:[COUNTRY_CODE]:[RD_CONNECT_ID]"
+        eg.: "rd_connect:ID:US:11111"
+    """
 
     id_list = ["rd_connect:ID:{0}:{1}".format(eric_data["eu_bbmri_eric_biobanks"]["country"].iloc[i],k) for i, k in enumerate(bb_id)]
     id_frame = pd.DataFrame(id_list)
@@ -213,6 +249,15 @@ def generate_bb_id(eric_data, bb_id):
     return id_frame
 
 def add_biobank_info(eric_data, rd_data):
+    """adds mandatory biobank info: id, name, juridical_person, country, partner_charter_signed, contact_priority
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    """
 
     # add MANDATORY information:
     bb_partner_cs = [False] # number of patients?
@@ -234,6 +279,19 @@ def add_biobank_info(eric_data, rd_data):
 
 
 def add_geo_info(eric_data, rd_data, geo_file="biobank_location_info.xlsx", try_geolocator=False):
+    """ adds longitude/latitude using provided file or geolocation service
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    geo_file : str, optional
+        filename of file with geo information, by default "biobank_location_info.xlsx"
+    try_geolocator : bool, optional
+        wether or not to use geolocator service, by default False
+    """
 
     try:
         geo_info = pd.read_excel(geo_file, sheet_name=None)
@@ -269,6 +327,16 @@ def add_geo_info(eric_data, rd_data, geo_file="biobank_location_info.xlsx", try_
                     eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
 def additional_biobank_info(eric_data, rd_data):
+    """ adds additional biobank info: description. acronym, person_id, organization-type ("registry" or "biobank")
+        calls function "add_geo_info do add longitude/latitude
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    """
 
     # add additional information:
     for biobank in eric_data["eu_bbmri_eric_biobanks"]["id"]:
@@ -294,6 +362,19 @@ def additional_biobank_info(eric_data, rd_data):
     add_geo_info(eric_data, rd_data)
 
 def generate_contact_id(eric_data):
+    """generates data frame that holds new IDs:
+    format: rd_connect:contactID:[COUNTRY_CODE]_[COUNTER]
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+
+    Returns
+    -------
+    data frame
+        person ids
+    """
 
     id_list = ["rd_connect:contactID:{0}_{1}".format(x.split(":")[2], k) for k, x in enumerate(eric_data["eu_bbmri_eric_persons"]["biobanks"])]
     id_frame = pd.DataFrame(id_list)
@@ -302,6 +383,15 @@ def generate_contact_id(eric_data):
 
 
 def add_persons(eric_data, rd_data):
+    """adds person information from rd_connect to data frame
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    rd_data : dict
+        dictionary that holds rd_connect information (with EMX package/entity/attribute names)
+    """
     eric_data["eu_bbmri_eric_persons"]["first_name"] = rd_data["rd_contacts"]["firstname"]
     eric_data["eu_bbmri_eric_persons"]["last_name"] = rd_data["rd_contacts"]["lastname"]
     eric_data["eu_bbmri_eric_persons"]["email"] = rd_data["rd_contacts"]["email"]
@@ -314,14 +404,36 @@ def add_persons(eric_data, rd_data):
     eric_data["eu_bbmri_eric_persons"]["id"] = generate_contact_id(eric_data)
 
 
-def write_excel(eric_data, eric_name, output_name):
-    
+def write_excel(eric_data, output_name):
+    """writes dictionary of pandas dataframes to excel file
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    output_name : string
+        file name for output file
+    """
     with pd.ExcelWriter(output_name,engine='xlsxwriter') as writer:
         for sheet_name in eric_data.keys():
             df1 = eric_data[sheet_name]
             df1.to_excel(writer, sheet_name=sheet_name,index=False)
 
 def rename_packages(eric_data, package_name):
+    """rename package name (standart: bbmri_eric_eu)
+
+    Parameters
+    ----------
+    eric_data : dict
+        dictionary that holds bbmri_eric file (with EMX package/entity/attribute names)
+    package_name : string
+        new package name for output file. "bbmri_eric_eu" gets replaced by "package_name"
+
+    Returns
+    -------
+    dict
+        same dictionary as eric_data but with changed package name where needed
+    """
     old_keys = list(eric_data.keys())
     new_keys = [key.replace("eu_bbmri_eric", package_name) for key in old_keys]
     new_dict = dict(zip(new_keys, eric_data.values()))
@@ -337,7 +449,7 @@ def rename_packages(eric_data, package_name):
     return new_dict
 
 if __name__ == "__main__":
-    sub_collections = False
+    sub_collections = True
 
     eric_name = "empty_eric.xlsx"
     rd_name = "rd_connect.xlsx"
@@ -359,4 +471,4 @@ if __name__ == "__main__":
 
     # change package name
     # eric_data = rename_packages(eric_data, package_name)
-    write_excel(eric_data, eric_name, output_name)
+    write_excel(eric_data, output_name)
