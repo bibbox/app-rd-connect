@@ -150,10 +150,10 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             size = rows.reset_index(drop=True).at[enum,'number']
             total_size += size
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = mag
+            # eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude'] = mag
             eric_data['eu_bbmri_eric_collections'].at[count,'order_of_magnitude_donors'] = mag
 
-            eric_data['eu_bbmri_eric_collections'].at[count,'size'] = size
+            # eric_data['eu_bbmri_eric_collections'].at[count,'size'] = size
             eric_data['eu_bbmri_eric_collections'].at[count,'number_of_donors'] = size
 
             eric_data['eu_bbmri_eric_collections'].at[count,'type'] = 'RD'
@@ -192,8 +192,8 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'type'] = "RD"
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'contact_priority'] = 5
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'data_categories'] = data_cat
-            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'size'] = total_size
-            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude'] = total_mag
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'number_of_donors'] = total_size
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude_donors'] = total_mag
 
 
 def get_country_code(eric_data, rd_data):
@@ -248,7 +248,7 @@ def generate_bb_id(eric_data, bb_id):
 
     return id_frame
 
-def add_biobank_info(eric_data, rd_data):
+def add_organization_info(eric_data, rd_data):
     """adds mandatory biobank info: id, name, juridical_person, country, partner_charter_signed, contact_priority
 
     Parameters
@@ -303,7 +303,7 @@ def add_geo_info(eric_data, rd_data, geo_file="biobank_location_info.xlsx", try_
             eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
             eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
-            return
+        return
 
     except FileNotFoundError:
 
@@ -326,7 +326,7 @@ def add_geo_info(eric_data, rd_data, geo_file="biobank_location_info.xlsx", try_
                     eric_data["eu_bbmri_eric_biobanks"]["longitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = longitude
                     eric_data["eu_bbmri_eric_biobanks"]["latitude"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = latitude
 
-def additional_biobank_info(eric_data, rd_data):
+def additional_organization_info(eric_data, rd_data):
     """ adds additional biobank info: description. acronym, person_id, organization-type ("registry" or "biobank")
         calls function "add_geo_info do add longitude/latitude
 
@@ -343,6 +343,8 @@ def additional_biobank_info(eric_data, rd_data):
         rd_id = int(biobank.split(":")[-1])
         description = rd_data["rd_core"]["Description"][rd_data["rd_core"]["OrganizationID"] == rd_id].values
         acronym = rd_data["rd_core"]["acronym"][rd_data["rd_core"]["OrganizationID"] == rd_id].values
+        organization_type = rd_data["rd_basic_info"]["type"][rd_data["rd_basic_info"]["OrganizationID"] == rd_id].values
+        eric_data["eu_bbmri_eric_biobanks"]["organization_type"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = organization_type
 
         if biobank in eric_data["eu_bbmri_eric_persons"]["biobanks"].values:
             person_id = eric_data["eu_bbmri_eric_persons"]["id"][eric_data["eu_bbmri_eric_persons"]["biobanks"] == biobank].values
@@ -451,7 +453,7 @@ def rename_packages(eric_data, package_name):
 if __name__ == "__main__":
     sub_collections = True
 
-    eric_name = "empty_eric.xlsx"
+    eric_name = "empty_eric_expanded.xlsx"
     rd_name = "rd_connect.xlsx"
     output_name = "rd_connect_eric_format_V1.xlsx"
     package_name = "rd_connect_v1"
@@ -463,11 +465,11 @@ if __name__ == "__main__":
     rd_data = pd.read_excel(rd_name, sheet_name=None)
     eric_data = pd.read_excel(eric_name, sheet_name=None)
 
-    add_biobank_info(eric_data, rd_data)
+    add_organization_info(eric_data, rd_data)
     add_collections_info(eric_data, rd_data, sub_collections)
     add_persons(eric_data, rd_data)
 
-    additional_biobank_info(eric_data, rd_data)
+    additional_organization_info(eric_data, rd_data)
 
     # change package name
     # eric_data = rename_packages(eric_data, package_name)
