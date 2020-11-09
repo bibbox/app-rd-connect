@@ -86,7 +86,7 @@ services:
       volumes_from: 
         - bibbox-molgenis-data
       ports:
-        - 9000:9000
+        - 9001:9001
       environment:
         MINIO_ACCESS_KEY: molgenis
         MINIO_SECRET_KEY: molgenis
@@ -100,3 +100,4 @@ services:
           - ./data/usr/share/elasticsearch/data:/usr/share/elasticsearch/data
           - ./data/home/molgenis:/home/molgenis
           - ./data/minio/data:/data
+        command: chmod -R 777 /usr/share/elasticsearch/data
