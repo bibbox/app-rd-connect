@@ -145,7 +145,8 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
 
         rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
         rd_materials = rd_data["rd_bb_core"]["Additional_Biomaterial_available"][rd_org_id]
-
+        org_type = rd_data["rd_basic_info"]["type"][rd_org_id].values[0]
+        
         total_size = 0
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
