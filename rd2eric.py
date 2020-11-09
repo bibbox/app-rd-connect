@@ -102,6 +102,12 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
 
+def get_material_type(eric_data, rd_materials):
+    
+    print(rd_materials)
+
+    return 0
+
 def add_collections_info(eric_data, rd_data, sub_collections=True):
     """ adds disease information into bbmri_collection entity
 
@@ -137,6 +143,9 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             collection_class = "_ch"
             count += 1
 
+        rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
+        rd_materials = rd_data["rd_bb_core"]["Additional_Biomaterial_available"][rd_org_id]
+
         total_size = 0
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
@@ -168,9 +177,18 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
                 data_cat = "BIOLOGICAL_SAMPLES,OTHER"
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
 
+
+                if pd.isnull(rd_materials.values[0]):
+                    eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = "NAV"
+
+                else:
+                    eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = get_material_type(eric_data, rd_materials)
+
+
             elif "registry" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
                 data_cat = "MEDICAL_RECORDS,OTHER"
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
+                eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = "NAP"
             else:
                 data_cat = "OTHER"
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
@@ -344,7 +362,7 @@ def additional_organization_info(eric_data, rd_data):
         description = rd_data["rd_core"]["Description"][rd_data["rd_core"]["OrganizationID"] == rd_id].values
         acronym = rd_data["rd_core"]["acronym"][rd_data["rd_core"]["OrganizationID"] == rd_id].values
         organization_type = rd_data["rd_basic_info"]["type"][rd_data["rd_basic_info"]["OrganizationID"] == rd_id].values
-        eric_data["eu_bbmri_eric_biobanks"]["organization_type"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = organization_type
+        eric_data["eu_bbmri_eric_biobanks"]["ressource_types"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = organization_type[0].upper()
 
         if biobank in eric_data["eu_bbmri_eric_persons"]["biobanks"].values:
             person_id = eric_data["eu_bbmri_eric_persons"]["id"][eric_data["eu_bbmri_eric_persons"]["biobanks"] == biobank].values
@@ -355,7 +373,7 @@ def additional_organization_info(eric_data, rd_data):
 
         if pd.isnull(acronym) and biobank in rd_data["rd_bb_core"]["OrganizationID"].values:
             acronym = rd_data["rd_core"]["acronym"][rd_data["rd_core"]["OrganizationID"] == rd_id].values
-
+            
 
         eric_data["eu_bbmri_eric_biobanks"]["description"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = description
         eric_data["eu_bbmri_eric_biobanks"]["acronym"].at[eric_data["eu_bbmri_eric_biobanks"]["id"] == biobank] = acronym
