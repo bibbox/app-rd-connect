@@ -104,9 +104,27 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
 
 def get_material_type(eric_data, rd_materials):
     
-    print(rd_materials)
+    eric_types = eric_data["eu_bbmri_eric_material_types"]["id"].values
+    rd_material_upper = rd_materials.values[0].upper()
+    rd_material_underline = rd_material_upper.replace(" ", "_")
+    found_materials = []
 
-    return 0
+    for type_ in eric_types:
+        if type_ in rd_material_upper:
+            found_materials.append(type_)
+        if type_ in rd_material_underline:
+            found_materials.append(type_)
+        if "TISSUES" in rd_material_upper:
+            found_materials.append("TISSUE_PARAFFIN_EMBEDDED")
+
+
+    if len(found_materials) > 0:
+        found = ",".join(list(set(found_materials)))
+        print("Found bbmri material type: {0} for rd_connect input: {1}".format(found, rd_material_upper))
+        return found
+    else: 
+        print("Set bbmri material type: [OTHER] for rd_connect input: {0}".format(rd_material_upper))
+        return "OTHER"
 
 def add_collections_info(eric_data, rd_data, sub_collections=True):
     """ adds disease information into bbmri_collection entity
@@ -123,7 +141,7 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
         by default True
     """
 
-    print(eric_data["eu_bbmri_eric_biobanks"])
+    # print(eric_data["eu_bbmri_eric_biobanks"])
 
     biobank_ids = eric_data["eu_bbmri_eric_biobanks"]['id']
     #orga_ids = biobank_id.str.split(pat=":")    #int(orga_id[-1])
@@ -144,7 +162,12 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             count += 1
 
         rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
-        rd_materials = rd_data["rd_bb_core"]["Additional_Biomaterial_available"][rd_org_id]
+        rd_bb_mask = rd_data['rd_bb_core']['OrganizationID'] == int(biobank_id.split(':')[-1])
+        rd_materials = rd_data["rd_bb_core"]["Additional_Biomaterial_available"][rd_bb_mask]
+
+        if len(rd_materials) > 0 and not pd.isnull(rd_materials.values[0]):
+            material_types = get_material_type(eric_data, rd_materials)
+
         org_type = rd_data["rd_basic_info"]["type"][rd_org_id].values[0]
         
         total_size = 0
@@ -178,17 +201,18 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
                 data_cat = "BIOLOGICAL_SAMPLES,OTHER"
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
 
-
                 if pd.isnull(rd_materials.values[0]):
+                    material_types = "NAV"
                     eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = "NAV"
 
                 else:
-                    eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = get_material_type(eric_data, rd_materials)
+                    eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = material_types
 
 
             elif "registry" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
                 data_cat = "MEDICAL_RECORDS,OTHER"
                 eric_data['eu_bbmri_eric_collections'].at[count,'data_categories'] = data_cat
+                material_types = "NAP"
                 eric_data['eu_bbmri_eric_collections'].at[count,'materials'] = "NAP"
             else:
                 data_cat = "OTHER"
@@ -213,6 +237,7 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'data_categories'] = data_cat
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'number_of_donors'] = total_size
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude_donors'] = total_mag
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'materials'] = material_types
 
 
 def get_country_code(eric_data, rd_data):
