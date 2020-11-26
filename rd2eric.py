@@ -227,7 +227,7 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             
             parent_mask = eric_data['eu_bbmri_eric_collections']["id"] == parent_id
             bb_name = rd_data['rd_basic_info'][basic_info_mask]["name"].values[0]
-            total_mag = int(np.log10(np.max([1, size])))
+            total_mag = int(np.log10(np.max([1, total_size])))
 
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'country']  = biobank_id.split(':')[2]
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'biobank']  = str(biobank_id)
