@@ -497,7 +497,7 @@ def rename_packages(eric_data, package_name):
 if __name__ == "__main__":
     sub_collections = True
 
-    eric_name = "empty_eric_expanded.xlsx"
+    eric_name = "empty_eric_duo.xlsx"
     rd_name = "rd_connect.xlsx"
     output_name = "rd_connect_eric_format_V1.xlsx"
     package_name = "rd_connect_v1"
