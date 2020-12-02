@@ -56,22 +56,28 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         data frame holding disease information of current biobank
     count : int
         counter of current (sub) collection. needed for access to "diagnosis_available"
+
+    Returns
+    -------
+    list of strings
+        list of codes
     """
 
 
     icd_code = rows.reset_index(drop=True).at[enum,'icd10']
     orpha_code = rows.reset_index(drop=True).at[enum,'orphacode']
     code_frame = eric_data['eu_bbmri_eric_disease_types']['code'].values
+    code_list = []
 
     if pd.isnull(icd_code) and pd.isnull(orpha_code):
-        return
+        return code_list
 
     if not pd.isnull(orpha_code):
         orpha_codes = ["ORPHA:" + orph for orph in re.findall(r'\d+', orpha_code)]
         # print("before list comp: \n", orpha_code)
         # print("\n after: \n ", orpha_codes)
-        code_list = []
         for code in orpha_codes:
+            code = code.replace(" ", "")
             if code in code_frame:
                 code_list.append(str(code))
             else:
@@ -90,6 +96,7 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         code_list = []
         rex = re.compile("^[A-Z]{1}[0-9]{2}[.][0-9]{1}$")
         for code in icd_codes:
+            code = code.replace(" ", "")
             if code in code_frame:
                 code_list.append("urn:miriam:icd:"+str(code))
 
@@ -102,7 +109,23 @@ def check_disease_type(eric_data, rd_data, enum, name, rows, count):
         code_list = sorted(list(set(code_list)))
         eric_data['eu_bbmri_eric_collections'].at[count,'diagnosis_available'] = ",".join(code_list)
 
+        return code_list
+
 def get_material_type(eric_data, rd_materials):
+    """[summary]
+
+    Parameters
+    ----------
+    eric_data : [type]
+        [description]
+    rd_materials : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     
     eric_types = eric_data["eu_bbmri_eric_material_types"]["id"].values
     rd_material_upper = rd_materials.values[0].upper()
@@ -171,6 +194,7 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
         org_type = rd_data["rd_basic_info"]["type"][rd_org_id].values[0]
         
         total_size = 0
+        codes = []
         for enum,name in enumerate(rows['name'].values):
             ids.append(str(biobank_id) + ':collection:' +str(name))
             eric_data['eu_bbmri_eric_collections'].at[count,'id'] = str(biobank_id) + ':collection{0}:'.format(collection_class) + str(enum+1) + ":" + str(name)
@@ -194,7 +218,10 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             eric_data['eu_bbmri_eric_collections'].at[count,'description'] = rows.reset_index(drop=True).at[enum,'synonym']
             eric_data['eu_bbmri_eric_collections'].at[count,'timestamp'] = pd.to_datetime(rd_data['rd_basic_info']['lastactivities'][basic_info_mask].values[0])
 
-            check_disease_type(eric_data, rd_data, enum, name, rows, count)
+            code_list = check_disease_type(eric_data, rd_data, enum, name, rows, count)
+
+            if code_list and len(code_list) > 0:
+                codes.append(code_list)
 
             rd_org_id = rd_data['rd_basic_info']['OrganizationID'] == int(biobank_id.split(':')[-1])
             if "biobank" in rd_data["rd_basic_info"]["type"][rd_org_id].values[0]:
@@ -224,10 +251,10 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             count +=1
 
         if sub_collections:
-            
             parent_mask = eric_data['eu_bbmri_eric_collections']["id"] == parent_id
             bb_name = rd_data['rd_basic_info'][basic_info_mask]["name"].values[0]
             total_mag = int(np.log10(np.max([1, total_size])))
+            codes = [item for sublist in codes for item in sublist]
 
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'country']  = biobank_id.split(':')[2]
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'biobank']  = str(biobank_id)
@@ -238,7 +265,8 @@ def add_collections_info(eric_data, rd_data, sub_collections=True):
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'number_of_donors'] = total_size
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'order_of_magnitude_donors'] = total_mag
             eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'materials'] = material_types
-
+            print(codes)
+            eric_data['eu_bbmri_eric_collections'].at[parent_mask, 'diagnosis_available'] = ",".join(set(codes))
 
 def get_country_code(eric_data, rd_data):
     """gets country code (ISO norm) eg.: AUSTRIA -> AUT ; UNITED STATS -> US etc
