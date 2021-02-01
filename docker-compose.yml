@@ -7,6 +7,7 @@ services:
       container_name: bibbox-molgenis
       environment:
         - molgenis.home=/home/molgenis
+        - python_script_executable=/usr/bin/python3
         - opencpu.uri.host=opencpu
         - elasticsearch.transport.addresses=elasticsearch:9300
         - db_uri=jdbc:postgresql://postgres/molgenis
