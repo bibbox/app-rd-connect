@@ -3,3 +3,4 @@
 settings.json
 /data
 *.xlsx#
+node_modules
