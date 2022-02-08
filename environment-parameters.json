@@ -1,10 +1,10 @@
 [
     {
-        "id":"DATABASE_PASSWORD",
-        "display_name":"Postgres Password",
+        "id":"ADMIN_PASSWORD",
+        "display_name":"Admin Password",
         "type":"text",
         "default_value":"changeforproduction",
-        "description":"Postgres Password, please change for production",
+        "description":"Admin Password, please change for production",
         "min_length": "1",
         "max_length": "128"
      }
