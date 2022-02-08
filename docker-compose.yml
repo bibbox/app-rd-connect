@@ -2,8 +2,8 @@ version: "2.0"
 services:
 
     bibbox-molgenis:
-      image: registry.molgenis.org/molgenis/molgenis-app:latest
-      # image: crs4/molgenis-app:ejprd-dev-v6
+      # image: registry.molgenis.org/molgenis/molgenis-app:latest
+      image: crs4/molgenis-app:ejprd-dev-v20
       container_name: bibbox-molgenis
       environment:
         - molgenis.home=/home/molgenis
