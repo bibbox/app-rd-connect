@@ -2,5 +2,5 @@
 *.pyc
 settings.json
 /data
-*.xlsx#
+#*.xlsx
 node_modules
