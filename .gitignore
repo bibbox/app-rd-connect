@@ -1,6 +1,11 @@
 .idea
 *.pyc
 settings.json
-/data
+# /data
+/data/usr/share/elasticsearch/data/nodes/0/indices
+/data/usr/share/elasticsearch/data/nodes/0/_state
+/data/var
+/data/home
+/data/minio
 #*.xlsx
 node_modules
