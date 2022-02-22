@@ -13,4 +13,7 @@
 
 ## Mounted Volumes
 
-
+## Set Permissions in Molgenis (for anonymous so everyone can browse data)
+ - Data set (Package: RD-Connect)
+ - sys.View
+ - sys.Negotiator
