@@ -1,5 +1,7 @@
 # RD-Connect
 
+## IMPORTANT: This repository is deprecated and should not be used.
+
 ## Development
 * based on Molgenis 8.4.2
 * based on working Repor: bbmri-eric-dir
